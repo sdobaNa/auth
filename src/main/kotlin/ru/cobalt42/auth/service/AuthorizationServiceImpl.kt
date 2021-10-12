@@ -7,6 +7,7 @@ import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import ru.cobalt42.auth.dto.Authorization
+import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
 import ru.cobalt42.auth.model.Refresh
 import ru.cobalt42.auth.model.User
@@ -24,7 +25,7 @@ class AuthorizationServiceImpl(
     private val refreshRepository: RefreshRepository,
     private val roleRepository: RoleRepository,
 ) : AuthorizationService {
-    override fun generate(authorization: Authorization): RefreshData {
+    override fun generate(authorization: Authorization): DefaultResponse {
         try {
             val user = userRepository.findByLogin(authorization.login)
             if (BCryptPasswordEncoder().matches(authorization.password, user.password)) {
@@ -37,11 +38,11 @@ class AuthorizationServiceImpl(
         }
     }
 
-    override fun refresh(refreshData: RefreshData): RefreshData {
-        return generateJWT(refreshData = refreshData)
+    override fun refresh(refreshData: RefreshData): DefaultResponse {
+        return DefaultResponse(generateJWT(refreshData = refreshData))
     }
 
-    private fun generateJWT(user: User = User(), refreshData: RefreshData = RefreshData()): RefreshData {
+    private fun generateJWT(user: User = User(), refreshData: RefreshData = RefreshData()): DefaultResponse {
         val refresh = try {
             refreshRepository.findByRefresh(refreshData.refresh)
         } catch (e: EmptyResultDataAccessException) {
@@ -71,7 +72,7 @@ class AuthorizationServiceImpl(
         try {
             if (refresh.refresh.isNotBlank() && refresh.exp.isNotBlank()) {
                 if (dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0) {
-                    return refreshData
+                    return DefaultResponse(refreshData)
                 } else if (dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time >= 0) {
                     refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 86400000))
                 }
@@ -103,7 +104,7 @@ class AuthorizationServiceImpl(
         }
 
         val userRefresh = try {
-            refreshRepository.findByUser(user.uid)
+            refreshRepository.findByUser(foundUser.uid)
         } catch (e: EmptyResultDataAccessException) {
             throw Throwable("Refresh not found")
         }
@@ -111,7 +112,7 @@ class AuthorizationServiceImpl(
         userRefresh.token = token
         refreshRepository.save(userRefresh)
 
-        return RefreshData(userRefresh.refresh, token)
+        return DefaultResponse(RefreshData(userRefresh.refresh, token))
     }
 
     private fun rolesFormatter(roles: List<Role>): Map<String, Int> {

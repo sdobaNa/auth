@@ -9,7 +9,7 @@ import ru.cobalt42.auth.service.AuthorizationService
 @CrossOrigin
 @RestController
 @RequestMapping("api/auth")
-class Authorization(
+class AuthorizationController(
     private val authorizationService: AuthorizationService
 ) {
 
@@ -17,23 +17,23 @@ class Authorization(
     fun generate(@RequestBody authorization: Authorization) =
         try {
             ResponseEntity.ok(authorizationService.generate(authorization))
-        } catch (e: Throwable) {
-            ResponseEntity.badRequest()
         } catch (e: IllegalArgumentException) {
-            ResponseEntity.status(401)
+            ResponseEntity.status(401).build()
         } catch (e: ArrayIndexOutOfBoundsException) {
-            ResponseEntity.status(403)
+            ResponseEntity.status(403).build()
+        } catch (e: Throwable) {
+            ResponseEntity.status(400).build()
         }
 
     @PostMapping("/refresh")
     fun refresh(@RequestBody refreshData: RefreshData) =
         try {
             ResponseEntity.ok(authorizationService.refresh(refreshData))
-        } catch (e: Throwable) {
-            ResponseEntity.badRequest()
         } catch (e: IllegalArgumentException) {
-            ResponseEntity.status(401)
+            ResponseEntity.status(401).build()
         } catch (e: ArrayIndexOutOfBoundsException) {
-            ResponseEntity.status(403)
+            ResponseEntity.status(403).build()
+        } catch (e: Throwable) {
+            ResponseEntity.status(400).build()
         }
 }
