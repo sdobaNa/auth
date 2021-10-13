@@ -71,13 +71,10 @@ class AuthorizationServiceImpl(
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         try {
             if (refresh.refresh.isNotBlank() && refresh.exp.isNotBlank()) {
-                if (dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0) {
-                    return DefaultResponse(refreshData)
-                } else if (dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time >= 0) {
-                    refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 86400000))
-                }
+                if (dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0)
+                    throw IllegalArgumentException()
             } else {
-                refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 86400000))
+                refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
             }
         } catch (e: Throwable) {
             throw Throwable("Incorrect expiration date")
