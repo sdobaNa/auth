@@ -46,7 +46,7 @@ class MongoConfig {
     @Primary
     @Bean
     fun authFactory(mongo: MongoProperties): MongoDatabaseFactory =
-        SimpleMongoClientDatabaseFactory(MongoClients.create("mongodb://localhost:27017"), mongo.database)
+        SimpleMongoClientDatabaseFactory(MongoClients.create("mongodb://${mongo.host}:${mongo.port}"), mongo.database)
 
 //    ---------
 
