@@ -39,7 +39,7 @@ class AuthorizationServiceImpl(
     }
 
     override fun refresh(refreshData: RefreshData): DefaultResponse {
-        return DefaultResponse(generateJWT(refreshData = refreshData))
+        return generateJWT(refreshData = refreshData)
     }
 
     private fun generateJWT(user: User = User(), refreshData: RefreshData = RefreshData()): DefaultResponse {
