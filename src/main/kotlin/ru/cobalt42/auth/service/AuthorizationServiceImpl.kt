@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import org.json.JSONObject
 import org.springframework.dao.EmptyResultDataAccessException
+import org.springframework.http.HttpStatus.*
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import ru.cobalt42.auth.dto.Authorization
@@ -11,6 +12,7 @@ import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
 import ru.cobalt42.auth.model.Refresh
 import ru.cobalt42.auth.model.User
+import ru.cobalt42.auth.model.exception.RequestException
 import ru.cobalt42.auth.model.role.Role
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
@@ -31,10 +33,10 @@ class AuthorizationServiceImpl(
             if (BCryptPasswordEncoder().matches(authorization.password, user.password)) {
                 return generateJWT(user)
             } else {
-                throw Throwable("Wrong password")
+                throw RequestException("Wrong password", BAD_REQUEST)
             }
         } catch (e: EmptyResultDataAccessException) {
-            throw Throwable("Wrong login")
+            throw RequestException("Wrong login", BAD_REQUEST)
         }
     }
 
@@ -57,14 +59,14 @@ class AuthorizationServiceImpl(
                     )
                 )
             } catch (e: IllegalArgumentException) {
-                throw IllegalArgumentException("Expired or invalid JWT token")
+                throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
             }
             try {
                 userRepository.findByUid(JSONObject(payload)["user"].toString())
             } catch (e: EmptyResultDataAccessException) {
-                throw Throwable("User not found")
+                throw RequestException("User not found", BAD_REQUEST)
             } catch (e: Throwable) {
-                throw IllegalArgumentException("Expired or invalid JWT token")
+                throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
             }
         } else user
 
@@ -77,14 +79,14 @@ class AuthorizationServiceImpl(
                 refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
             }
         } catch (e: Throwable) {
-            throw Throwable("Incorrect expiration date")
+            throw RequestException("Incorrect expiration date", BAD_REQUEST)
         }
 
         val roles = rolesFormatter(foundUser.roles.map {
             try {
                 roleRepository.findByUid(it)
             } catch (e: EmptyResultDataAccessException) {
-                throw ArrayIndexOutOfBoundsException("Role not found")
+                throw RequestException("Role not found", FORBIDDEN)
             }
         })
 
@@ -97,13 +99,13 @@ class AuthorizationServiceImpl(
                     Algorithm.HMAC256("secret")
                 )
         } catch (e: Throwable) {
-            throw Throwable("Denied JWT create")
+            throw RequestException("Denied JWT create", BAD_REQUEST)
         }
 
         val userRefresh = try {
             refreshRepository.findByUser(foundUser.uid)
         } catch (e: EmptyResultDataAccessException) {
-            throw Throwable("Refresh not found")
+            throw RequestException("Refresh not found", BAD_REQUEST)
         }
         userRefresh.exp = refresh.exp
         userRefresh.token = token
@@ -122,7 +124,7 @@ class AuthorizationServiceImpl(
                 if (rolesMap[permission.uname] != null) {
                     if (rolesMap[permission.uname]!! < permission.permissionLevel)
                         rolesMap[permission.uname] = permission.permissionLevel
-                } else throw ArrayIndexOutOfBoundsException("Permission is missing")
+                } else throw RequestException("Permission is missing", FORBIDDEN)
             }
         }
         return rolesMap
