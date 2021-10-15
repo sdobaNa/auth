@@ -2,6 +2,7 @@ package ru.cobalt42.auth.config.mongo
 
 import com.mongodb.client.MongoClients
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -23,6 +24,12 @@ class MongoConfig {
 
     @Autowired
     lateinit var mongoMappingContext: MongoMappingContext
+
+    @Value("\${spring.data.mongodb.host}")
+    lateinit var mongoHost: String
+
+    @Value("\${spring.data.mongodb.port}")
+    lateinit var mongoPort: String
 
     /*
     * Disable default TypeMapper

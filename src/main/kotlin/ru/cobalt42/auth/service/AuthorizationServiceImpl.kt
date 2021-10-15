@@ -58,7 +58,7 @@ class AuthorizationServiceImpl(
                         refresh.token.split(".")[1]
                     )
                 )
-            } catch (e: IllegalArgumentException) {
+            } catch (e: Throwable) {
                 throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
             }
             try {

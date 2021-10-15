@@ -15,25 +15,8 @@ class AuthorizationController(
 
     @PostMapping("/generate")
     fun generate(@RequestBody authorization: Authorization) =
-        try {
-            ResponseEntity.ok(authorizationService.generate(authorization))
-        } catch (e: IllegalArgumentException) {
-            ResponseEntity.status(401).build()
-        } catch (e: ArrayIndexOutOfBoundsException) {
-            ResponseEntity.status(403).build()
-        } catch (e: Throwable) {
-            ResponseEntity.status(400).build()
-        }
+        ResponseEntity.ok(authorizationService.generate(authorization))
 
     @PostMapping("/refresh")
-    fun refresh(@RequestBody refreshData: RefreshData) =
-        try {
-            ResponseEntity.ok(authorizationService.refresh(refreshData))
-        } catch (e: IllegalArgumentException) {
-            ResponseEntity.status(401).build()
-        } catch (e: ArrayIndexOutOfBoundsException) {
-            ResponseEntity.status(403).build()
-        } catch (e: Throwable) {
-            ResponseEntity.status(400).build()
-        }
+    fun refresh(@RequestBody refreshData: RefreshData) = ResponseEntity.ok(authorizationService.refresh(refreshData))
 }
