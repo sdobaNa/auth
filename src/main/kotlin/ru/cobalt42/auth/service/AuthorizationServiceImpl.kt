@@ -94,7 +94,7 @@ class AuthorizationServiceImpl(
             JWT.create()
                 .withClaim("permission", roles)
                 .withClaim("user", foundUser.uid)
-                .withClaim("iat", Date())
+                .withIssuedAt(Date())
                 .withExpiresAt(Date(System.currentTimeMillis() + 900000)).sign(
                     Algorithm.HMAC256("secret")
                 )
