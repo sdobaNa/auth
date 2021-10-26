@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service
 import ru.cobalt42.auth.dto.Authorization
 import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
+import ru.cobalt42.auth.exception.RequestException
 import ru.cobalt42.auth.model.Refresh
 import ru.cobalt42.auth.model.User
-import ru.cobalt42.auth.model.exception.RequestException
 import ru.cobalt42.auth.model.role.Role
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
@@ -72,12 +72,11 @@ class AuthorizationServiceImpl(
 
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         try {
-            if (refresh.refresh.isNotBlank() && refresh.exp.isNotBlank()) {
-                if (dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0)
-                    throw IllegalArgumentException()
-            } else {
-                refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
-            }
+            if (refresh.exp.isNotBlank() && dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0) throw RequestException(
+                "Expired or invalid JWT token",
+                UNAUTHORIZED
+            )
+            refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
         } catch (e: Throwable) {
             throw RequestException("Incorrect expiration date", BAD_REQUEST)
         }

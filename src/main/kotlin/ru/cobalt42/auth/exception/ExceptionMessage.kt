@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.model.exception
+package ru.cobalt42.auth.exception
 
 import ru.cobalt42.auth.model.dictionary.Target
 
