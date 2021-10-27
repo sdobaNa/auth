@@ -76,6 +76,14 @@ class AuthorizationServiceImpl(
             }
         } else user
 
+        var isAdmin = false
+        user.roles.forEach {
+            try {
+                if (roleRepository.findByUid(it).name == "admin") isAdmin = true
+            } catch (e: EmptyResultDataAccessException) {
+            }
+        }
+
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         try {
             if (refreshEntry.refresh.isNotBlank() && refreshEntry.exp.isNotBlank()) {
@@ -118,7 +126,7 @@ class AuthorizationServiceImpl(
         } catch (e: EmptyResultDataAccessException) {
             throw RequestException("Refresh not found", BAD_REQUEST)
         }
-        userRefresh.refresh = refreshEntry.refresh
+        if (!isAdmin) userRefresh.refresh = refreshEntry.refresh
         userRefresh.exp = refreshEntry.exp
         userRefresh.token = token
         refreshRepository.save(userRefresh)
