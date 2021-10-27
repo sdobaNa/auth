@@ -41,12 +41,18 @@ class AuthorizationServiceImpl(
     }
 
     override fun refresh(refreshData: RefreshData): DefaultResponse {
-        return generateJWT(refreshData = refreshData)
+        return generateJWT(
+            refresh = try {
+                refreshRepository.findByRefresh(refreshData.refresh)
+            } catch (e: EmptyResultDataAccessException) {
+                throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
+            }
+        )
     }
 
-    private fun generateJWT(user: User = User(), refreshData: RefreshData = RefreshData()): DefaultResponse {
-        val refresh = try {
-            refreshRepository.findByRefresh(refreshData.refresh)
+    private fun generateJWT(user: User = User(), refresh: Refresh = Refresh()): DefaultResponse {
+        val refreshEntry = try {
+            refreshRepository.findByRefresh(refresh.refresh)
         } catch (e: EmptyResultDataAccessException) {
             Refresh()
         }
@@ -55,7 +61,7 @@ class AuthorizationServiceImpl(
             val payload = try {
                 String(
                     Base64.getDecoder().decode(
-                        refresh.token.split(".")[1]
+                        refreshEntry.token.split(".")[1]
                     )
                 )
             } catch (e: Throwable) {
@@ -72,11 +78,17 @@ class AuthorizationServiceImpl(
 
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         try {
-            if (refresh.exp.isNotBlank() && dateFormatter.parse(refresh.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0) throw RequestException(
-                "Expired or invalid JWT token",
-                UNAUTHORIZED
-            )
-            refresh.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
+            if (refreshEntry.refresh.isNotBlank() && refreshEntry.exp.isNotBlank()) {
+                if (dateFormatter.parse(refreshEntry.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0)
+                    throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
+                else if (dateFormatter.parse(refreshEntry.exp).time - Date(System.currentTimeMillis() + 1000000).time >= 0) {
+                    refreshEntry.refresh = UUID.randomUUID().toString()
+                    refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
+                }
+            } else {
+                refreshEntry.refresh = UUID.randomUUID().toString()
+                refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
+            }
         } catch (e: Throwable) {
             throw RequestException("Incorrect expiration date", BAD_REQUEST)
         }
@@ -106,7 +118,8 @@ class AuthorizationServiceImpl(
         } catch (e: EmptyResultDataAccessException) {
             throw RequestException("Refresh not found", BAD_REQUEST)
         }
-        userRefresh.exp = refresh.exp
+        userRefresh.refresh = refreshEntry.refresh
+        userRefresh.exp = refreshEntry.exp
         userRefresh.token = token
         refreshRepository.save(userRefresh)
 

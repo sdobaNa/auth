@@ -17,6 +17,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.cobalt42.auth.dto.Authorization
 import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
+import ru.cobalt42.auth.model.Refresh
+import ru.cobalt42.auth.model.User
+import ru.cobalt42.auth.model.role.Role
+import ru.cobalt42.auth.repository.auth.RefreshRepository
+import ru.cobalt42.auth.repository.auth.RoleRepository
+import ru.cobalt42.auth.repository.auth.UserRepository
+import ru.cobalt42.auth.util.enums.Permissions
+import java.util.*
+import javax.annotation.PostConstruct
 
 @ExtendWith(SpringExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -26,11 +35,47 @@ class AuthorizationTest {
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
 
+    @Autowired
+    private lateinit var refreshRepository: RefreshRepository
+
+    @Autowired
+    private lateinit var roleRepository: RoleRepository
+
+    @Autowired
+    private lateinit var userRepository: UserRepository
+
     @LocalServerPort
     private var port = 0
 
     private fun getPathGenerate() = "http://localhost:${port}/api/auth/generate"
     private fun getPathRefresh() = "http://localhost:${port}/api/auth/refresh"
+
+    @PostConstruct
+    private fun save() {
+        userRepository.save(
+            User(
+                uid = "0bf6cd3f-c3d3-45b7-b6ff-7a5122411916",
+                login = "cobalt",
+                password = "$2a$10$2wggeB6Xl0tnHnMMOdd4vuANO/xcxd/h2iAZJCev48kgZ/gOeZMk.",
+                roles = listOf("ff5084b6-bcf2-43fd-beff-d47bbf4610b8")
+            )
+        )
+        roleRepository.save(
+            Role(
+                uid = "ff5084b6-bcf2-43fd-beff-d47bbf4610b8",
+                name = "admin",
+                permissions = Permissions.PERMISSIONS.permissions.map { it.copy(permissionLevel = 4) },
+            )
+        )
+        refreshRepository.save(
+            Refresh(
+                refresh = UUID.randomUUID().toString(),
+                exp = "2021-10-27T21:46:34+0500",
+                token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwZXJtaXNzaW9uIjp7InBlcnNvbiI6N...",
+                user = "0bf6cd3f-c3d3-45b7-b6ff-7a5122411916"
+            )
+        )
+    }
 
     @Test
     fun generateToken() {
@@ -66,12 +111,8 @@ class AuthorizationTest {
             assert(false) { "not deserializable object" }
             RefreshData()
         }
-        assertEquals("b7eac3a1-54db-4526-a6b4-6e2cb0d617e4", request.refresh)
-    }
 
-    @Test
-    fun refreshToken() {
-        val correctResponse = restTemplate.exchange(
+        val badTokenResponse = restTemplate.exchange(
             getPathRefresh(),
             HttpMethod.POST,
             HttpEntity(
@@ -82,15 +123,19 @@ class AuthorizationTest {
             ),
             DefaultResponse::class.java
         )
-        assertEquals(200, correctResponse.statusCodeValue)
-        val request = try {
-            ObjectMapper().convertValue(
-                correctResponse.body?.result,
-                object : TypeReference<RefreshData>() {})
-        } catch (e: IllegalArgumentException) {
-            assert(false) { "not deserializable object" }
-            RefreshData()
-        }
-        assertEquals("b7eac3a1-54db-4526-a6b4-6e2cb0d617e4", request.refresh)
+        assertEquals(401, badTokenResponse.statusCodeValue)
+
+        val refreshResponse = restTemplate.exchange(
+            getPathRefresh(),
+            HttpMethod.POST,
+            HttpEntity(
+                RefreshData(
+                    request.refresh,
+                    request.token
+                )
+            ),
+            DefaultResponse::class.java
+        )
+        assertEquals(200, refreshResponse.statusCodeValue)
     }
 }
