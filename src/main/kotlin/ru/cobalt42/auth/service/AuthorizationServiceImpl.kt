@@ -3,6 +3,7 @@ package ru.cobalt42.auth.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.http.HttpStatus.*
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -27,6 +28,13 @@ class AuthorizationServiceImpl(
     private val refreshRepository: RefreshRepository,
     private val roleRepository: RoleRepository,
 ) : AuthorizationService {
+
+    @Value("\${token.refresh.time}")
+    private lateinit var refreshTime: String
+
+    @Value("\${token.access.time}")
+    private lateinit var accessTime: String
+
     override fun generate(authorization: Authorization): DefaultResponse {
         try {
             val user = userRepository.findByLogin(authorization.login)
@@ -83,12 +91,14 @@ class AuthorizationServiceImpl(
                     throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
                 else if (dateFormatter.parse(refreshEntry.exp).time - Date(System.currentTimeMillis() + 1000000).time >= 0) {
                     refreshEntry.refresh = UUID.randomUUID().toString()
-                    refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
+                    refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + refreshTime.toInt()))
                 }
             } else {
                 refreshEntry.refresh = UUID.randomUUID().toString()
-                refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + 36000000))
+                refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + refreshTime.toInt()))
             }
+        } catch (e: NumberFormatException) {
+            throw RequestException("Invalid property token.refresh.time", BAD_REQUEST)
         } catch (e: Throwable) {
             throw RequestException("Incorrect expiration date", BAD_REQUEST)
         }
@@ -106,9 +116,11 @@ class AuthorizationServiceImpl(
                 .withClaim("permission", roles)
                 .withClaim("user", foundUser.uid)
                 .withIssuedAt(Date())
-                .withExpiresAt(Date(System.currentTimeMillis() + 900000)).sign(
+                .withExpiresAt(Date(System.currentTimeMillis() + accessTime.toInt())).sign(
                     Algorithm.HMAC256("secret")
                 )
+        } catch (e: NumberFormatException) {
+            throw RequestException("Invalid property token.access.time", BAD_REQUEST)
         } catch (e: Throwable) {
             throw RequestException("Denied JWT create", BAD_REQUEST)
         }

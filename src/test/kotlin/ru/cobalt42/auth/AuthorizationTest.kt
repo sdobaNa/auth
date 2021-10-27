@@ -63,7 +63,7 @@ class AuthorizationTest {
         roleRepository.save(
             Role(
                 uid = "ff5084b6-bcf2-43fd-beff-d47bbf4610b8",
-                name = "admin",
+                name = "user",
                 permissions = Permissions.PERMISSIONS.permissions.map { it.copy(permissionLevel = 4) },
             )
         )
