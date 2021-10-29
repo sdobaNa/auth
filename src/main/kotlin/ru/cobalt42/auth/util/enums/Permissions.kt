@@ -320,6 +320,11 @@ enum class Permissions(var permissions: List<Permission>) {
                 "projectChangelog",
                 "Ведомость изменений проекта",
             ),
+            Permission(
+                0,
+                "parse",
+                "Импорт данных"
+            )
         )
     )
 }
