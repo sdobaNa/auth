@@ -23,6 +23,9 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         // Entry points
         http.authorizeRequests().anyRequest().permitAll()
 
+        // Apply JWT
+        http.apply(JwtFilterConfiguration())
+
         http.cors()
 
         http.httpBasic()
