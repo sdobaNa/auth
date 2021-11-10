@@ -13,8 +13,8 @@ import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
 import ru.cobalt42.auth.exception.RequestException
 import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.User
 import ru.cobalt42.auth.model.role.Role
+import ru.cobalt42.auth.model.user.User
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
 import ru.cobalt42.auth.repository.auth.UserRepository

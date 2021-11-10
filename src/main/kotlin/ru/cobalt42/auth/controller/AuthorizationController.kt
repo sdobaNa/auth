@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.collector
+package ru.cobalt42.auth.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

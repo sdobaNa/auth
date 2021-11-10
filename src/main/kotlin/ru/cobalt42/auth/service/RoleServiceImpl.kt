@@ -6,25 +6,25 @@ import org.springframework.stereotype.Service
 import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.ValidateException
-import ru.cobalt42.auth.model.user.User
-import ru.cobalt42.auth.repository.auth.UserRepository
+import ru.cobalt42.auth.model.role.Role
+import ru.cobalt42.auth.repository.auth.RoleRepository
 import ru.cobalt42.auth.util.SystemMessages
 import java.util.*
 
 @Service
-class UserServiceImpl(
-    private val repository: UserRepository,
+class RoleServiceImpl(
+    private val repository: RoleRepository,
     private val systemMessages: SystemMessages
-) : UserService {
+) : RoleService {
 
-    override fun createOne(user: User, authToken: String): User {
-        val messages = validator(user, authToken)
+    override fun createOne(role: Role, authToken: String): Role {
+        val messages = validator(role, authToken)
         if (messages.isEmpty()) {
-            user.uid = UUID.randomUUID().toString()
-            repository.save(user)
+            role.uid = UUID.randomUUID().toString()
+            repository.save(role)
         } else
-            throw ValidateException(messages, user)
-        return user
+            throw ValidateException(messages, role)
+        return role
     }
 
     override fun getAll(paging: Pageable, search: String): PaginatedResponse {
@@ -45,13 +45,13 @@ class UserServiceImpl(
             )
     }
 
-    override fun getOne(uid: String): User = repository.findByUid(uid)
+    override fun getOne(uid: String): Role = repository.findByUid(uid)
 
-    override fun updateOne(uid: String, user: User, authToken: String): User {
-        user.uid = uid
-        val messages = validator(user, authToken)
+    override fun updateOne(uid: String, role: Role, authToken: String): Role {
+        role.uid = uid
+        val messages = validator(role, authToken)
         if (messages.any { (it.code in 1..9999) })
-            throw ValidateException(messages, user)
+            throw ValidateException(messages, role)
         val old = try {
             repository.findByUid(uid)
         } catch (e: DataAccessException) {
@@ -61,18 +61,18 @@ class UserServiceImpl(
                     uname = "updatedDocumentNotFound"
                 )
             )
-            User()
+            Role()
         }
-        user._id = old._id
-        repository.save(user)
-        return user
+        role._id = old._id
+        repository.save(role)
+        return role
     }
 
     override fun deleteOne(uid: String) = repository.deleteByUid(uid)
 
-    private fun validator(user: User, authToken: String): MutableList<ExceptionMessage> {
+    private fun validator(role: Role, authToken: String): MutableList<ExceptionMessage> {
         val message = mutableListOf<ExceptionMessage>()
-        if (user.lastName.isBlank())
+        if (role.name.isBlank())
             message.add(
                 systemMessages.getException(
                     authToken = authToken,
