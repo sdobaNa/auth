@@ -134,8 +134,16 @@ class AuthorizationServiceImpl(
         userRefresh.exp = refreshEntry.exp
         userRefresh.token = token
         refreshRepository.save(userRefresh)
-
-        return DefaultResponse(RefreshData(userRefresh.refresh, token))
+        return DefaultResponse(
+            RefreshData(
+                userRefresh.refresh,
+                token,
+                user.name,
+                user.organization,
+                user.position,
+                user.avatar
+            )
+        )
     }
 
     private fun rolesFormatter(roles: List<Role>): Map<String, Int> {

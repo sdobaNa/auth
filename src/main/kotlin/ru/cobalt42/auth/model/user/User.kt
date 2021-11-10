@@ -19,7 +19,7 @@ data class User(
     var mail: String = "",
     var login: String = "",
     var password: String = "",
-    var logo: Logo = Logo(),
+    var avatar: Logo = Logo(),
     var roles: List<String> = emptyList(),
     @Id
     @JsonIgnore
