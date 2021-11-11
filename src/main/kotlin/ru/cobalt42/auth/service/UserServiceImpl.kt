@@ -1,22 +1,33 @@
 package ru.cobalt42.auth.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.dao.DataAccessException
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
+import ru.cobalt42.auth.exception.RequestException
 import ru.cobalt42.auth.exception.ValidateException
+import ru.cobalt42.auth.model.Refresh
 import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.SystemMessages
+import java.text.SimpleDateFormat
 import java.util.*
 
 @Service
 class UserServiceImpl(
     private val repository: UserRepository,
+    private val refreshRepository: RefreshRepository,
     private val systemMessages: SystemMessages
 ) : UserService {
+
+    @Value("\${token.refresh.time}")
+    private lateinit var refreshTime: String
 
     override fun createOne(user: User, authToken: String): User {
         val messages = validator(user, authToken)
@@ -26,6 +37,17 @@ class UserServiceImpl(
             repository.save(user)
         } else
             throw ValidateException(messages, user)
+        refreshRepository.save(
+            Refresh(
+                refresh = UUID.randomUUID().toString(),
+                exp = try {
+                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date(System.currentTimeMillis() + refreshTime.toInt()))
+                } catch (e: Throwable) {
+                    throw RequestException("Expiration date exception", HttpStatus.BAD_REQUEST)
+                },
+                user = user.uid
+            )
+        )
         return user
     }
 
@@ -74,15 +96,18 @@ class UserServiceImpl(
     override fun deleteOne(uid: String) = repository.deleteByUid(uid)
 
     private fun validator(user: User, authToken: String): MutableList<ExceptionMessage> {
-        val message = mutableListOf<ExceptionMessage>()
-        if (user.login.isBlank())
-            message.add(
-                systemMessages.getException(
-                    authToken = authToken,
-                    description = "проекта",
-                    uname = "requiredFieldsEmpty"
+        val messages = mutableListOf<ExceptionMessage>()
+        if (user.login.isNotBlank())
+            try {
+                repository.findByLogin(user.login)
+                messages.add(
+                    systemMessages.getWarning(
+                        authToken = authToken,
+                        uname = "loginIsUse"
+                    )
                 )
-            )
-        return message
+            } catch (e: EmptyResultDataAccessException) {
+            }
+        return messages
     }
 }

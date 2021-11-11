@@ -35,11 +35,11 @@ class AuthorizationServiceImpl(
     @Value("\${token.access.time}")
     private lateinit var accessTime: String
 
-    override fun generate(authorization: Authorization): DefaultResponse {
+    override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse {
         try {
             val user = userRepository.findByLogin(authorization.login)
             if (BCryptPasswordEncoder().matches(authorization.password, user.password)) {
-                return generateJWT(user)
+                return generateJWT(user, isAdminPanel = isAdminPanel)
             } else {
                 throw RequestException("Wrong password", BAD_REQUEST)
             }
@@ -58,7 +58,11 @@ class AuthorizationServiceImpl(
         )
     }
 
-    private fun generateJWT(user: User = User(), refresh: Refresh = Refresh()): DefaultResponse {
+    private fun generateJWT(
+        user: User = User(),
+        refresh: Refresh = Refresh(),
+        isAdminPanel: Boolean = false
+    ): DefaultResponse {
         val refreshEntry = try {
             refreshRepository.findByRefresh(refresh.refresh)
         } catch (e: EmptyResultDataAccessException) {
@@ -102,14 +106,18 @@ class AuthorizationServiceImpl(
         } catch (e: Throwable) {
             throw RequestException("Incorrect expiration date", BAD_REQUEST)
         }
-
-        val roles = rolesFormatter(foundUser.roles.map {
+        val userRoles = foundUser.roles.map {
             try {
                 roleRepository.findByUid(it)
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("Role not found", FORBIDDEN)
             }
-        })
+        }
+
+        if (isAdminPanel && userRoles.find { it.name == "admin" } == null)
+            throw RequestException("Access denied", BAD_REQUEST)
+
+        val roles = rolesFormatter(userRoles)
 
         val token = try {
             JWT.create()
