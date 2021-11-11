@@ -97,6 +97,78 @@ class UserServiceImpl(
 
     private fun validator(user: User, authToken: String): MutableList<ExceptionMessage> {
         val messages = mutableListOf<ExceptionMessage>()
+        if (user.login.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Логин"
+                )
+            )
+        if (user.password.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Пароль"
+                )
+            )
+        if (user.firstName.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Имя"
+                )
+            )
+        if (user.secondName.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Отчество"
+                )
+            )
+        if (user.lastName.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Фамилия"
+                )
+            )
+        if (user.name.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Фамилия и инициалы"
+                )
+            )
+        if (user.organization.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Наименование организации"
+                )
+            )
+        if (user.position.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Наименование должности"
+                )
+            )
+        if (user.roles.isEmpty())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Роли"
+                )
+            )
         if (user.login.isNotBlank())
             try {
                 repository.findByLogin(user.login)

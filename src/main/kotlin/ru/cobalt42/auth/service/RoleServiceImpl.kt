@@ -76,8 +76,8 @@ class RoleServiceImpl(
             message.add(
                 systemMessages.getException(
                     authToken = authToken,
-                    description = "проекта",
-                    uname = "requiredFieldsEmpty"
+                    uname = "requiredFieldsEmpty",
+                    description = "Наименование"
                 )
             )
         return message
