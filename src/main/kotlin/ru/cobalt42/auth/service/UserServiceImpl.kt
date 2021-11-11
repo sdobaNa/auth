@@ -31,6 +31,17 @@ class UserServiceImpl(
 
     override fun createOne(user: User, authToken: String): User {
         val messages = validator(user, authToken)
+        if (user.login.isNotBlank())
+            try {
+                repository.findByLogin(user.login)
+                messages.add(
+                    systemMessages.getWarning(
+                        authToken = authToken,
+                        uname = "loginIsUse"
+                    )
+                )
+            } catch (e: EmptyResultDataAccessException) {
+            }
         if (messages.isEmpty()) {
             user.uid = UUID.randomUUID().toString()
             user.password = BCryptPasswordEncoder().encode(user.password)
@@ -88,7 +99,8 @@ class UserServiceImpl(
             User()
         }
         user._id = old._id
-        user.password = BCryptPasswordEncoder().encode(user.password)
+        if (user.password.isNotBlank())
+            user.password = BCryptPasswordEncoder().encode(user.password)
         repository.save(user)
         return user
     }
@@ -169,17 +181,6 @@ class UserServiceImpl(
                     description = "Роли"
                 )
             )
-        if (user.login.isNotBlank())
-            try {
-                repository.findByLogin(user.login)
-                messages.add(
-                    systemMessages.getWarning(
-                        authToken = authToken,
-                        uname = "loginIsUse"
-                    )
-                )
-            } catch (e: EmptyResultDataAccessException) {
-            }
         return messages
     }
 }
