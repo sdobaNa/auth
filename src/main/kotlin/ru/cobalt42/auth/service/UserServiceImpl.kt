@@ -103,6 +103,7 @@ class UserServiceImpl(
         user._id = old._id
         if (user.password.isNotBlank())
             user.password = BCryptPasswordEncoder().encode(user.password)
+        else user.password = old.password
         repository.save(user)
         return user
     }
@@ -117,14 +118,6 @@ class UserServiceImpl(
                     authToken = authToken,
                     uname = "requiredFieldsEmpty",
                     description = "Логин"
-                )
-            )
-        if (user.password.isBlank())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Пароль"
                 )
             )
         if (user.firstName.isBlank())
