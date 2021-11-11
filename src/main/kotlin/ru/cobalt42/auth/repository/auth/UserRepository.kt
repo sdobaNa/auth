@@ -9,6 +9,6 @@ import ru.cobalt42.auth.model.user.User
 interface UserRepository : MongoRepository<User, ObjectId> {
     fun findByLogin(login: String): User
     fun findByUid(uid: String): User
-    fun findByNameContainingIgnoreCase(name: String, padding: Pageable): Page<User>
+    fun findByLoginContainingIgnoreCase(login: String, padding: Pageable): Page<User>
     fun deleteByUid(uid: String)
 }

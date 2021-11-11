@@ -63,7 +63,7 @@ class UserServiceImpl(
         else
             PaginatedResponse(
                 result =
-                repository.findByNameContainingIgnoreCase(search, paging)
+                repository.findByLoginContainingIgnoreCase(search, paging)
                     .also { total = it.totalElements }.toList(),
                 total = total
             )
