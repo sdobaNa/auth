@@ -2,6 +2,7 @@ package ru.cobalt42.auth.service
 
 import org.springframework.dao.DataAccessException
 import org.springframework.data.domain.Pageable
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
@@ -21,6 +22,7 @@ class UserServiceImpl(
         val messages = validator(user, authToken)
         if (messages.isEmpty()) {
             user.uid = UUID.randomUUID().toString()
+            user.password = BCryptPasswordEncoder().encode(user.password)
             repository.save(user)
         } else
             throw ValidateException(messages, user)
@@ -64,6 +66,7 @@ class UserServiceImpl(
             User()
         }
         user._id = old._id
+        user.password = BCryptPasswordEncoder().encode(user.password)
         repository.save(user)
         return user
     }
@@ -72,7 +75,7 @@ class UserServiceImpl(
 
     private fun validator(user: User, authToken: String): MutableList<ExceptionMessage> {
         val message = mutableListOf<ExceptionMessage>()
-        if (user.lastName.isBlank())
+        if (user.login.isBlank())
             message.add(
                 systemMessages.getException(
                     authToken = authToken,
