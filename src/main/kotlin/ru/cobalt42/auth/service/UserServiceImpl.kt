@@ -80,7 +80,9 @@ class UserServiceImpl(
             )
     }
 
-    override fun getOne(uid: String): User = repository.findByUid(uid)
+    override fun getOne(uid: String): User {
+        return repository.findByUid(uid).also { it.password = "" }
+    }
 
     override fun updateOne(uid: String, user: User, authToken: String): User {
         user.uid = uid
