@@ -31,6 +31,14 @@ class UserServiceImpl(
 
     override fun createOne(user: User, authToken: String): User {
         val messages = validator(user, authToken)
+        if (user.password.isBlank())
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "requiredFieldsEmpty",
+                    description = "Пароль"
+                )
+            )
         if (user.login.isNotBlank())
             try {
                 repository.findByLogin(user.login)
@@ -40,25 +48,23 @@ class UserServiceImpl(
                         uname = "loginIsUse"
                     )
                 )
+                throw ValidateException(messages, user)
             } catch (e: EmptyResultDataAccessException) {
+                user.uid = UUID.randomUUID().toString()
+                user.password = BCryptPasswordEncoder().encode(user.password)
+                repository.save(user)
+                refreshRepository.save(
+                    Refresh(
+                        refresh = UUID.randomUUID().toString(),
+                        exp = try {
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date(System.currentTimeMillis() + refreshTime.toInt()))
+                        } catch (e: Throwable) {
+                            throw RequestException("Expiration date exception", HttpStatus.BAD_REQUEST)
+                        },
+                        user = user.uid
+                    )
+                )
             }
-        if (messages.isEmpty()) {
-            user.uid = UUID.randomUUID().toString()
-            user.password = BCryptPasswordEncoder().encode(user.password)
-            repository.save(user)
-        } else
-            throw ValidateException(messages, user)
-        refreshRepository.save(
-            Refresh(
-                refresh = UUID.randomUUID().toString(),
-                exp = try {
-                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date(System.currentTimeMillis() + refreshTime.toInt()))
-                } catch (e: Throwable) {
-                    throw RequestException("Expiration date exception", HttpStatus.BAD_REQUEST)
-                },
-                user = user.uid
-            )
-        )
         return user
     }
 
