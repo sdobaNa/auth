@@ -148,6 +148,7 @@ class AuthorizationServiceImpl(
             RefreshData(
                 userRefresh.refresh,
                 token,
+                user.uid,
                 user.name,
                 user.organization,
                 user.position,
