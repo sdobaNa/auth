@@ -38,6 +38,7 @@ class AuthorizationServiceImpl(
     override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse {
         try {
             val user = userRepository.findByLogin(authorization.login)
+            if (user.disabled) throw RequestException("User is disabled", BAD_REQUEST)
             if (BCryptPasswordEncoder().matches(authorization.password, user.password)) {
                 return generateJWT(user, isAdminPanel = isAdminPanel)
             } else {
@@ -81,6 +82,7 @@ class AuthorizationServiceImpl(
             }
             try {
                 userRepository.findByUid(JSONObject(payload)["user"].toString())
+                    .also { if (it.disabled) throw RequestException("User is disabled", BAD_REQUEST) }
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("User not found", BAD_REQUEST)
             } catch (e: Throwable) {
