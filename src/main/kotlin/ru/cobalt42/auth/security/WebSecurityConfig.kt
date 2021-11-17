@@ -1,5 +1,6 @@
-package ru.cobalt42.auth.config.security
+package ru.cobalt42.auth.security
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -12,6 +13,9 @@ import org.springframework.security.config.http.SessionCreationPolicy
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
+    @Value("\${actuator.admin.token}")
+    lateinit var adminToken: String
+
     override fun configure(http: HttpSecurity) {
 
         // Disable CSRF (cross site request forgery)
@@ -21,10 +25,12 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
         // Entry points
-        http.authorizeRequests().anyRequest().permitAll()
+        http.authorizeRequests()
+            .antMatchers("actuator/**").hasRole("ActuatorAdmin")
+            .anyRequest().permitAll()
 
         // Apply JWT
-        http.apply(JwtFilterConfiguration())
+        http.apply(JwtFilterConfigurer(adminToken))
 
         http.cors()
 
