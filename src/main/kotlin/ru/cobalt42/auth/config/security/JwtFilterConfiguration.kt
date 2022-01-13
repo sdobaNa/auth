@@ -6,9 +6,12 @@ import org.springframework.security.web.DefaultSecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 
-class JwtFilterConfiguration : SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
+class JwtFilterConfiguration(
+    private var jwtProvider: JwtProvider,
+) : SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
 
     override fun configure(http: HttpSecurity) {
-        http.addFilterBefore(JwtFilter(), UsernamePasswordAuthenticationFilter::class.java)
+        val customFilter = JwtFilter(jwtProvider)
+        http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter::class.java)
     }
 }
