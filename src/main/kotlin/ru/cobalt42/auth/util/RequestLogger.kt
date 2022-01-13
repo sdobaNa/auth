@@ -1,7 +1,7 @@
 package ru.cobalt42.auth.util
 
 import org.springframework.web.util.ContentCachingRequestWrapper
-import ru.cobalt42.auth.config.security.JwtProvider
+import ru.cobalt42.auth.security.JwtProvider
 import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat

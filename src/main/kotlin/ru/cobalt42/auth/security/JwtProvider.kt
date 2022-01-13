@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.config.security
+package ru.cobalt42.auth.security
 
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts

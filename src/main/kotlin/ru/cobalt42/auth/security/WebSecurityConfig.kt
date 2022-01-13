@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.config.security
+package ru.cobalt42.auth.security
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
@@ -31,7 +31,7 @@ class WebSecurityConfig(
             .antMatchers("actuator/**").hasRole("ActuatorAdmin")
 
         // Apply JWT
-        http.apply(JwtFilterConfiguration(jwtProvider, adminToken))
+        http.apply(JwtFilterConfigurer(jwtProvider, adminToken))
 
         http.cors()
 
