@@ -5,6 +5,6 @@ import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
 
 interface AuthorizationService {
-    fun generate(authorization: Authorization): DefaultResponse
+    fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse
     fun refresh(refreshData: RefreshData): DefaultResponse
 }

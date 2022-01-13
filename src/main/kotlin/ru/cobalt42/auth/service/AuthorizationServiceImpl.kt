@@ -13,8 +13,8 @@ import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
 import ru.cobalt42.auth.exception.RequestException
 import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.User
 import ru.cobalt42.auth.model.role.Role
+import ru.cobalt42.auth.model.user.User
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
@@ -35,11 +35,12 @@ class AuthorizationServiceImpl(
     @Value("\${token.access.time}")
     private lateinit var accessTime: String
 
-    override fun generate(authorization: Authorization): DefaultResponse {
+    override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse {
         try {
             val user = userRepository.findByLogin(authorization.login)
+            if (user.disabled) throw RequestException("User is disabled", BAD_REQUEST)
             if (BCryptPasswordEncoder().matches(authorization.password, user.password)) {
-                return generateJWT(user)
+                return generateJWT(user, isAdminPanel = isAdminPanel)
             } else {
                 throw RequestException("Wrong password", BAD_REQUEST)
             }
@@ -58,7 +59,11 @@ class AuthorizationServiceImpl(
         )
     }
 
-    private fun generateJWT(user: User = User(), refresh: Refresh = Refresh()): DefaultResponse {
+    private fun generateJWT(
+        user: User = User(),
+        refresh: Refresh = Refresh(),
+        isAdminPanel: Boolean = false
+    ): DefaultResponse {
         val refreshEntry = try {
             refreshRepository.findByRefresh(refresh.refresh)
         } catch (e: EmptyResultDataAccessException) {
@@ -77,6 +82,7 @@ class AuthorizationServiceImpl(
             }
             try {
                 userRepository.findByUid(JSONObject(payload)["user"].toString())
+                    .also { if (it.disabled) throw RequestException("User is disabled", BAD_REQUEST) }
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("User not found", BAD_REQUEST)
             } catch (e: Throwable) {
@@ -102,14 +108,18 @@ class AuthorizationServiceImpl(
         } catch (e: Throwable) {
             throw RequestException("Incorrect expiration date", BAD_REQUEST)
         }
-
-        val roles = rolesFormatter(foundUser.roles.map {
+        val userRoles = foundUser.roles.map {
             try {
                 roleRepository.findByUid(it)
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("Role not found", FORBIDDEN)
             }
-        })
+        }
+
+        if (isAdminPanel && userRoles.find { it.name == "admin" } == null)
+            throw RequestException("Access denied", BAD_REQUEST)
+
+        val roles = rolesFormatter(userRoles)
 
         val token = try {
             JWT.create()
@@ -134,8 +144,17 @@ class AuthorizationServiceImpl(
         userRefresh.exp = refreshEntry.exp
         userRefresh.token = token
         refreshRepository.save(userRefresh)
-
-        return DefaultResponse(RefreshData(userRefresh.refresh, token))
+        return DefaultResponse(
+            RefreshData(
+                userRefresh.refresh,
+                token,
+                user.uid,
+                user.name,
+                user.organization,
+                user.position,
+                user.avatar
+            )
+        )
     }
 
     private fun rolesFormatter(roles: List<Role>): Map<String, Int> {

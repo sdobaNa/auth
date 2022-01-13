@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document
 data class Role(
     var uid: String = "",
-    var comment: String = "",
     var name: String = "",
     var permissions: List<Permission> = emptyList(),
     @Id
