@@ -28,7 +28,9 @@ class WebSecurityConfig(
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
         http.authorizeRequests()
+            .antMatchers("api/auth/**").hasRole("VerifiedToken")
             .antMatchers("actuator/**").hasRole("ActuatorAdmin")
+            .anyRequest().authenticated()
 
         // Apply JWT
         http.apply(JwtFilterConfigurer(jwtProvider, adminToken))

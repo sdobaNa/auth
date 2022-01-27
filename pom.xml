@@ -17,6 +17,7 @@
 		<java.version>1.8</java.version>
 		<kotlin.version>1.5.30</kotlin.version>
 		<jsonwebtoken.version>0.9.1</jsonwebtoken.version>
+		<javax.xml.bind.version>2.3.1</javax.xml.bind.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -96,6 +97,11 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt</artifactId>
 			<version>${jsonwebtoken.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${javax.xml.bind.version}</version>
 		</dependency>
 	</dependencies>
 
