@@ -42,7 +42,6 @@ class JwtProvider(
         }
         return try {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
-            adminCheck(token)
             true
         } catch (e: JwtException) {
             throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
@@ -51,7 +50,7 @@ class JwtProvider(
         }
     }
 
-    private fun adminCheck(token: String?) {
+    fun adminCheck(token: String?, httpServletRequest: HttpServletRequest) {
         val payload = try {
             String(
                 Base64.getDecoder().decode(
@@ -65,6 +64,18 @@ class JwtProvider(
             JSONObject(payload)["user"].toString()
         } catch (e: Throwable) {
             throw RequestException("System error", INTERNAL_SERVER_ERROR)
+        }
+
+        val path = httpServletRequest.requestURI.split("/")
+        try {
+            when (httpServletRequest.method) {
+                "GET", "POST" -> {
+                    if (path.size == 5 && path[3] == "user")
+                        return
+                }
+            }
+        } catch (e: NullPointerException) {
+            throw RequestException("Invalid path", INTERNAL_SERVER_ERROR)
         }
 
         if (try {
