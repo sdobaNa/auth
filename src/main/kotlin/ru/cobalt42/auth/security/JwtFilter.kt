@@ -41,6 +41,7 @@ class JwtFilter(
             try {
                 val token: String? = jwtProvider.resolveToken(httpServletRequest)
                 if (jwtProvider.validateToken(token)) {
+                    jwtProvider.adminCheck(token, httpServletRequest)
                     SecurityContextHolder.getContext().authentication = UsernamePasswordAuthenticationToken(
                         null, null, Collections.singletonList(
                             SimpleGrantedAuthority("VerifiedToken")
