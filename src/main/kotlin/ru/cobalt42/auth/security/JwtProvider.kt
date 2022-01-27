@@ -2,17 +2,23 @@ package ru.cobalt42.auth.security
 
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
+import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
-import org.springframework.http.HttpStatus.UNAUTHORIZED
+import org.springframework.dao.EmptyResultDataAccessException
+import org.springframework.http.HttpStatus.*
 import org.springframework.stereotype.Component
 import ru.cobalt42.auth.exception.RequestException
+import ru.cobalt42.auth.repository.auth.RoleRepository
+import ru.cobalt42.auth.repository.auth.UserRepository
 import java.util.*
 import javax.annotation.PostConstruct
 import javax.servlet.http.HttpServletRequest
 
 @Component
-class JwtProvider {
+class JwtProvider(
+    private val userRepository: UserRepository,
+    private val roleRepository: RoleRepository
+) {
     @Value("\${security.jwt.token.secret-key}")
     private lateinit var secretKey: String
 
@@ -36,11 +42,37 @@ class JwtProvider {
         }
         return try {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
+            adminCheck(token)
             true
         } catch (e: JwtException) {
             throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
         } catch (e: IllegalArgumentException) {
             throw RequestException("Error 500", INTERNAL_SERVER_ERROR)
         }
+    }
+
+    private fun adminCheck(token: String?) {
+        val payload = try {
+            String(
+                Base64.getDecoder().decode(
+                    token!!.split(".")[1]
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
+        }
+        val userUid = try {
+            JSONObject(payload)["user"].toString()
+        } catch (e: Throwable) {
+            throw RequestException("System error", INTERNAL_SERVER_ERROR)
+        }
+
+        if (try {
+                userRepository.findByUid(userUid).roles.map { roleRepository.findByUid(it) }
+                    .any { it.name == "admin" }
+            } catch (e: EmptyResultDataAccessException) {
+                throw RequestException("User or role is missing", UNAUTHORIZED)
+            }
+        ) return else throw RequestException("Permission denied", FORBIDDEN)
     }
 }
