@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document
 data class User(
     var uid: String = "",
-    var disabled: Boolean = false,
     var firstName: String = "",
     var secondName: String = "",
     var lastName: String = "",
@@ -21,6 +20,8 @@ data class User(
     var password: String = "",
     var avatar: Logo = Logo(),
     var roles: List<String> = emptyList(),
+    var subExpDate: String = "",
+    var statusId: Int = 0,
     @Id
     @JsonIgnore
     var _id: ObjectId = ObjectId.get()

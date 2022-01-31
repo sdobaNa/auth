@@ -37,8 +37,10 @@ class UserController(
     }
 
     @GetMapping("/{uid}")
-    fun getOne(@PathVariable uid: String) = try {
-        ResponseEntity.ok(DefaultResponse(service.getOne(uid), mutableListOf()))
+    fun getOne(
+        @PathVariable uid: String,
+        @RequestHeader("Authorization") authToken: String) = try {
+        ResponseEntity.ok(DefaultResponse(service.getOne(uid, authToken), mutableListOf()))
     } catch (e: EmptyResultDataAccessException) {
         ResponseEntity.status(HttpStatus.GONE).build()
     }
