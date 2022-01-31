@@ -16,6 +16,7 @@ import ru.cobalt42.auth.model.user.User
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.SystemMessages
+import ru.cobalt42.auth.util.UserSearcher
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,7 +24,8 @@ import java.util.*
 class UserServiceImpl(
     private val repository: UserRepository,
     private val refreshRepository: RefreshRepository,
-    private val systemMessages: SystemMessages
+    private val systemMessages: SystemMessages,
+    private val userSearcher: UserSearcher
 ) : UserService {
 
     @Value("\${token.refresh.time}")
@@ -86,32 +88,37 @@ class UserServiceImpl(
             )
     }
 
-    override fun getOne(uid: String): User {
-        return repository.findByUid(uid).also { it.password = "" }
+    override fun getOne(uid: String, authToken: String): User {
+        if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid))
+            return repository.findByUid(uid).also { it.password = "" }
+        else
+            throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
     override fun updateOne(uid: String, user: User, authToken: String): User {
-        user.uid = uid
-        val messages = validator(user, authToken)
-        if (messages.any { (it.code in 1..9999) })
-            throw ValidateException(messages, user)
-        val old = try {
-            repository.findByUid(uid)
-        } catch (e: DataAccessException) {
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "updatedDocumentNotFound"
+        if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid)) {
+            user.uid = uid
+            val messages = validator(user, authToken)
+            if (messages.any { (it.code in 1..9999) })
+                throw ValidateException(messages, user)
+            val old = try {
+                repository.findByUid(uid)
+            } catch (e: DataAccessException) {
+                messages.add(
+                    systemMessages.getWarning(
+                        authToken = authToken,
+                        uname = "updatedDocumentNotFound"
+                    )
                 )
-            )
-            User()
-        }
-        user._id = old._id
-        if (user.password.isNotBlank())
-            user.password = BCryptPasswordEncoder().encode(user.password)
-        else user.password = old.password
-        repository.save(user)
-        return user
+                User()
+            }
+            user._id = old._id
+            if (user.password.isNotBlank())
+                user.password = BCryptPasswordEncoder().encode(user.password)
+            else user.password = old.password
+            repository.save(user)
+            return user
+        } else throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
     override fun deleteOne(uid: String) = repository.deleteByUid(uid)

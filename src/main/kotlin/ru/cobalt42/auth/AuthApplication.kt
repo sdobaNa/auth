@@ -13,6 +13,8 @@ import ru.cobalt42.auth.model.Refresh
 import ru.cobalt42.auth.model.role.Role
 import ru.cobalt42.auth.model.user.User
 import ru.cobalt42.auth.util.enums.Permissions.PERMISSIONS
+import ru.cobalt42.auth.util.enums.UserStatuses
+import ru.cobalt42.auth.util.enums.UserStatuses.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,11 +38,11 @@ fun main(args: Array<String>) {
     MongoTemplate(databaseFactory, converter).save(
         User(
             uid = userUid,
-            disabled = false,
             login = "cobalt",
             password = "\$2a\$10\$2wggeB6Xl0tnHnMMOdd4vuANO/xcxd/h2iAZJCev48kgZ/gOeZMk.",
             name = "admin",
             roles = listOf(roleUid),
+            statusId = ENABLED.status,
             _id = ObjectId("6139c83a235ced2377be4f28")
         ),
         "user"

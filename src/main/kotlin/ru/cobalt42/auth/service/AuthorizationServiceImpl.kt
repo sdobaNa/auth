@@ -19,6 +19,8 @@ import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.enums.Permissions.PERMISSIONS
+import ru.cobalt42.auth.util.enums.UserStatuses.ENABLED
+import ru.cobalt42.auth.util.enums.UserStatuses.EXPIRED
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,10 +37,17 @@ class AuthorizationServiceImpl(
     @Value("\${token.access.time}")
     private lateinit var accessTime: String
 
+    @Value("\${security.jwt.token.secret-key}")
+    private lateinit var key: String
+
     override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse {
         try {
             val user = userRepository.findByLogin(authorization.login)
-            if (user.disabled) throw RequestException("User is disabled", BAD_REQUEST)
+            if (user.subExpDate.isNotBlank() && SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(user.subExpDate) < Date()) {
+                user.statusId = EXPIRED.status
+                userRepository.save(user)
+            }
+            if (user.statusId != ENABLED.status) throw RequestException("User is disabled", BAD_REQUEST)
             if (BCryptPasswordEncoder().matches(authorization.password, user.password)) {
                 return generateJWT(user, isAdminPanel = isAdminPanel)
             } else {
@@ -82,7 +91,12 @@ class AuthorizationServiceImpl(
             }
             try {
                 userRepository.findByUid(JSONObject(payload)["user"].toString())
-                    .also { if (it.disabled) throw RequestException("User is disabled", BAD_REQUEST) }
+                    .also {
+                        if (user.statusId != ENABLED.status) throw RequestException(
+                            "User is disabled",
+                            BAD_REQUEST
+                        )
+                    }
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("User not found", BAD_REQUEST)
             } catch (e: Throwable) {
@@ -127,7 +141,7 @@ class AuthorizationServiceImpl(
                 .withClaim("user", foundUser.uid)
                 .withIssuedAt(Date())
                 .withExpiresAt(Date(System.currentTimeMillis() + accessTime.toInt())).sign(
-                    Algorithm.HMAC256("secret")
+                    Algorithm.HMAC256(key)
                 )
         } catch (e: NumberFormatException) {
             throw RequestException("Invalid property token.access.time", BAD_REQUEST)

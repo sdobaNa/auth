@@ -8,12 +8,14 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
+import ru.cobalt42.auth.exception.CustomAuthenticationEntryPoint
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 class WebSecurityConfig(
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint,
 ) : WebSecurityConfigurerAdapter() {
 
     @Value("\${actuator.admin.token}")
@@ -22,7 +24,7 @@ class WebSecurityConfig(
     override fun configure(http: HttpSecurity) {
 
         // Disable CSRF (cross site request forgery)
-        http.csrf().disable()
+        http.csrf().disable().exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint)
 
         // No session will be created or used by spring security
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
