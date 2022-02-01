@@ -22,6 +22,7 @@ data class User(
     var roles: List<String> = emptyList(),
     var subExpDate: String = "",
     var statusId: Int = 0,
+    var groupUid: String = "",
     @Id
     @JsonIgnore
     var _id: ObjectId = ObjectId.get()

@@ -7,25 +7,24 @@ import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.ValidateException
-import ru.cobalt42.auth.model.role.Role
-import ru.cobalt42.auth.repository.auth.RoleRepository
+import ru.cobalt42.auth.model.group.Group
+import ru.cobalt42.auth.repository.auth.GroupRepository
 import ru.cobalt42.auth.util.SystemMessages
 import java.util.*
 
 @Service
-class RoleServiceImpl(
-    private val repository: RoleRepository,
+class GroupServiceImpl(
+    private val repository: GroupRepository,
     private val systemMessages: SystemMessages
-) : RoleService {
-
-    override fun createOne(role: Role, authToken: String): DefaultResponse {
-        val messages = validator(role, authToken)
+) : GroupService {
+    override fun createOne(group: Group, authToken: String): DefaultResponse {
+        val messages = validator(group, authToken)
         if (messages.isEmpty()) {
-            role.uid = UUID.randomUUID().toString()
-            repository.save(role)
+            group.uid = UUID.randomUUID().toString()
+            repository.save(group)
         } else
-            throw ValidateException(role, messages)
-        return DefaultResponse(role, messages)
+            throw ValidateException(group, messages)
+        return DefaultResponse(group, messages)
     }
 
     override fun getAll(paging: Pageable, search: String): PaginatedResponse {
@@ -48,11 +47,11 @@ class RoleServiceImpl(
 
     override fun getOne(uid: String): DefaultResponse = DefaultResponse(repository.findByUid(uid))
 
-    override fun updateOne(uid: String, role: Role, authToken: String): DefaultResponse {
-        role.uid = uid
-        val messages = validator(role, authToken)
+    override fun updateOne(uid: String, group: Group, authToken: String): DefaultResponse {
+        group.uid = uid
+        val messages = validator(group, authToken)
         if (messages.any { (it.code in 1..9999) })
-            throw ValidateException(role, messages)
+            throw ValidateException(group, messages)
         val old = try {
             repository.findByUid(uid)
         } catch (e: DataAccessException) {
@@ -62,18 +61,18 @@ class RoleServiceImpl(
                     uname = "updatedDocumentNotFound"
                 )
             )
-            Role()
+            Group()
         }
-        role._id = old._id
-        repository.save(role)
-        return DefaultResponse(role, messages)
+        group._id = old._id
+        repository.save(group)
+        return DefaultResponse(group, messages)
     }
 
     override fun deleteOne(uid: String) = repository.deleteByUid(uid)
 
-    private fun validator(role: Role, authToken: String): MutableList<ExceptionMessage> {
+    private fun validator(group: Group, authToken: String): MutableList<ExceptionMessage> {
         val message = mutableListOf<ExceptionMessage>()
-        if (role.name.isBlank())
+        if (group.name.isBlank())
             message.add(
                 systemMessages.getException(
                     authToken = authToken,

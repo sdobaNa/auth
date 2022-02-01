@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.RequestException
@@ -31,7 +32,7 @@ class UserServiceImpl(
     @Value("\${token.refresh.time}")
     private lateinit var refreshTime: String
 
-    override fun createOne(user: User, authToken: String): User {
+    override fun createOne(user: User, authToken: String): DefaultResponse {
         val messages = validator(user, authToken)
         if (user.password.isBlank())
             messages.add(
@@ -45,12 +46,12 @@ class UserServiceImpl(
             try {
                 repository.findByLogin(user.login)
                 messages.add(
-                    systemMessages.getWarning(
+                    systemMessages.getException(
                         authToken = authToken,
                         uname = "loginIsUse"
                     )
                 )
-                throw ValidateException(messages, user)
+                throw ValidateException(user, messages)
             } catch (e: EmptyResultDataAccessException) {
                 user.uid = UUID.randomUUID().toString()
                 user.password = BCryptPasswordEncoder().encode(user.password)
@@ -67,7 +68,7 @@ class UserServiceImpl(
                     )
                 )
             }
-        return user
+        return DefaultResponse(user, messages)
     }
 
     override fun getAll(paging: Pageable, search: String): PaginatedResponse {
@@ -88,19 +89,19 @@ class UserServiceImpl(
             )
     }
 
-    override fun getOne(uid: String, authToken: String): User {
+    override fun getOne(uid: String, authToken: String): DefaultResponse {
         if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid))
-            return repository.findByUid(uid).also { it.password = "" }
+            return DefaultResponse(repository.findByUid(uid).also { it.password = "" })
         else
             throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
-    override fun updateOne(uid: String, user: User, authToken: String): User {
+    override fun updateOne(uid: String, user: User, authToken: String): DefaultResponse {
         if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid)) {
             user.uid = uid
             val messages = validator(user, authToken)
             if (messages.any { (it.code in 1..9999) })
-                throw ValidateException(messages, user)
+                throw ValidateException(user, messages)
             val old = try {
                 repository.findByUid(uid)
             } catch (e: DataAccessException) {
@@ -117,7 +118,7 @@ class UserServiceImpl(
                 user.password = BCryptPasswordEncoder().encode(user.password)
             else user.password = old.password
             repository.save(user)
-            return user
+            return DefaultResponse(user, messages)
         } else throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
@@ -133,62 +134,62 @@ class UserServiceImpl(
                     description = "Логин"
                 )
             )
-        if (user.firstName.isBlank())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Имя"
-                )
-            )
-        if (user.secondName.isBlank())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Отчество"
-                )
-            )
-        if (user.lastName.isBlank())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Фамилия"
-                )
-            )
-        if (user.name.isBlank())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Фамилия и инициалы"
-                )
-            )
-        if (user.organization.isBlank())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Наименование организации"
-                )
-            )
-        if (user.position.isBlank())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Наименование должности"
-                )
-            )
-        if (user.roles.isEmpty())
-            messages.add(
-                systemMessages.getWarning(
-                    authToken = authToken,
-                    uname = "requiredFieldsEmpty",
-                    description = "Роли"
-                )
-            )
+//        if (user.firstName.isBlank())
+//            messages.add(
+//                systemMessages.getWarning(
+//                    authToken = authToken,
+//                    uname = "requiredFieldsEmpty",
+//                    description = "Имя"
+//                )
+//            )
+//        if (user.secondName.isBlank())
+//            messages.add(
+//                systemMessages.getWarning(
+//                    authToken = authToken,
+//                    uname = "requiredFieldsEmpty",
+//                    description = "Отчество"
+//                )
+//            )
+//        if (user.lastName.isBlank())
+//            messages.add(
+//                systemMessages.getWarning(
+//                    authToken = authToken,
+//                    uname = "requiredFieldsEmpty",
+//                    description = "Фамилия"
+//                )
+//            )
+//        if (user.name.isBlank())
+//            messages.add(
+//                systemMessages.getWarning(
+//                    authToken = authToken,
+//                    uname = "requiredFieldsEmpty",
+//                    description = "Фамилия и инициалы"
+//                )
+//            )
+//        if (user.organization.isBlank())
+//            messages.add(
+//                systemMessages.getWarning(
+//                    authToken = authToken,
+//                    uname = "requiredFieldsEmpty",
+//                    description = "Наименование организации"
+//                )
+//            )
+//        if (user.position.isBlank())
+//            messages.add(
+//                systemMessages.getWarning(
+//                    authToken = authToken,
+//                    uname = "requiredFieldsEmpty",
+//                    description = "Наименование должности"
+//                )
+//            )
+//        if (user.roles.isEmpty())
+//            messages.add(
+//                systemMessages.getWarning(
+//                    authToken = authToken,
+//                    uname = "requiredFieldsEmpty",
+//                    description = "Роли"
+//                )
+//            )
         return messages
     }
 }

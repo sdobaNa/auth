@@ -43,7 +43,7 @@ class AuthorizationServiceImpl(
     override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse {
         try {
             val user = userRepository.findByLogin(authorization.login)
-            if (user.subExpDate.isNotBlank() && SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(user.subExpDate) < Date()) {
+            if (user.subExpDate.isNotBlank() && SimpleDateFormat("yyyy-MM-dd").parse(user.subExpDate) < Date()) {
                 user.statusId = EXPIRED.status
                 userRepository.save(user)
             }
