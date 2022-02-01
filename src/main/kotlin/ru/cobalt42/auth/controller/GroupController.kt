@@ -6,21 +6,21 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ru.cobalt42.auth.dto.PaginatedResponse
-import ru.cobalt42.auth.model.user.User
-import ru.cobalt42.auth.service.UserService
+import ru.cobalt42.auth.model.group.Group
+import ru.cobalt42.auth.service.GroupService
 
 @CrossOrigin
 @RestController
-@RequestMapping("api/auth/user")
-class UserController(
-    private val service: UserService
+@RequestMapping("api/auth/group")
+class GroupController(
+    private val service: GroupService
 ) {
     @PostMapping
     fun createOne(
-        @RequestBody user: User,
+        @RequestBody group: Group,
         @RequestHeader("Authorization") authToken: String
     ) = try {
-        ResponseEntity.ok(service.createOne(user, authToken))
+        ResponseEntity.ok(service.createOne(group, authToken))
     } catch (e: EmptyResultDataAccessException) {
         ResponseEntity.notFound().build()
     }
@@ -36,11 +36,8 @@ class UserController(
     }
 
     @GetMapping("/{uid}")
-    fun getOne(
-        @PathVariable uid: String,
-        @RequestHeader("Authorization") authToken: String
-    ) = try {
-        ResponseEntity.ok(service.getOne(uid, authToken))
+    fun getOne(@PathVariable uid: String) = try {
+        ResponseEntity.ok(service.getOne(uid))
     } catch (e: EmptyResultDataAccessException) {
         ResponseEntity.status(HttpStatus.GONE).build()
     }
@@ -48,10 +45,10 @@ class UserController(
     @PostMapping("/{uid}")
     fun updateOne(
         @PathVariable("uid") uid: String,
-        @RequestBody user: User,
+        @RequestBody group: Group,
         @RequestHeader("Authorization") authToken: String
     ) = try {
-        ResponseEntity.ok(service.updateOne(uid, user, authToken))
+        ResponseEntity.ok(service.updateOne(uid, group, authToken))
     } catch (e: EmptyResultDataAccessException) {
         ResponseEntity.status(HttpStatus.GONE).build()
     }

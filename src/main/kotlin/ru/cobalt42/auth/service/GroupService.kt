@@ -3,12 +3,12 @@ package ru.cobalt42.auth.service
 import org.springframework.data.domain.Pageable
 import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.PaginatedResponse
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.group.Group
 
-interface UserService {
-    fun createOne(user: User, authToken: String): DefaultResponse
+interface GroupService {
+    fun createOne(group: Group, authToken: String): DefaultResponse
     fun getAll(paging: Pageable, search: String): PaginatedResponse
-    fun getOne(uid: String, authToken: String): DefaultResponse
-    fun updateOne(uid: String, user: User, authToken: String): DefaultResponse
+    fun getOne(uid: String): DefaultResponse
+    fun updateOne(uid: String, group: Group, authToken: String): DefaultResponse
     fun deleteOne(uid: String)
 }

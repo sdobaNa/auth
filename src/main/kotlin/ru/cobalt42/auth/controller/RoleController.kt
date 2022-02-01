@@ -5,7 +5,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.model.role.Role
 import ru.cobalt42.auth.service.RoleService
@@ -16,12 +15,12 @@ import ru.cobalt42.auth.service.RoleService
 class RoleController(
     private val service: RoleService
 ) {
-    @PostMapping()
+    @PostMapping
     fun createOne(
         @RequestBody role: Role,
         @RequestHeader("Authorization") authToken: String
     ) = try {
-        ResponseEntity.ok(DefaultResponse(service.createOne(role, authToken), mutableListOf()))
+        ResponseEntity.ok(service.createOne(role, authToken))
     } catch (e: EmptyResultDataAccessException) {
         ResponseEntity.notFound().build()
     }
@@ -38,7 +37,7 @@ class RoleController(
 
     @GetMapping("/{uid}")
     fun getOne(@PathVariable uid: String) = try {
-        ResponseEntity.ok(DefaultResponse(service.getOne(uid), mutableListOf()))
+        ResponseEntity.ok(service.getOne(uid))
     } catch (e: EmptyResultDataAccessException) {
         ResponseEntity.status(HttpStatus.GONE).build()
     }
@@ -49,9 +48,7 @@ class RoleController(
         @RequestBody role: Role,
         @RequestHeader("Authorization") authToken: String
     ) = try {
-        ResponseEntity.ok(
-            DefaultResponse(service.updateOne(uid, role, authToken), mutableListOf())
-        )
+        ResponseEntity.ok(service.updateOne(uid, role, authToken))
     } catch (e: EmptyResultDataAccessException) {
         ResponseEntity.status(HttpStatus.GONE).build()
     }
