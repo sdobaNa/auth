@@ -12,7 +12,6 @@ data class User(
     var secondName: String = "",
     var lastName: String = "",
     var name: String = "",
-    var organization: String = "",
     var position: String = "",
     var phoneNumber: String = "",
     var mail: String = "",
@@ -23,6 +22,7 @@ data class User(
     var subExpDate: String = "",
     var statusId: Int = 0,
     var groupUid: String = "",
+    var projectUid: String = "",
     @JsonIgnore
     @Id
     var _id: ObjectId = ObjectId.get()

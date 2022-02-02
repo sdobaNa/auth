@@ -97,32 +97,46 @@ class UserServiceImpl(
     }
 
     override fun updateOne(uid: String, user: User, authToken: String): DefaultResponse {
-        if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid)) {
-            user.uid = uid
-            val messages = validator(user, authToken)
-            if (messages.any { (it.code in 1..9999) })
-                throw ValidateException(user, messages)
-            val old = try {
-                repository.getByUid(uid)
-            } catch (e: DataAccessException) {
-                messages.add(
-                    systemMessages.getWarning(
-                        authToken = authToken,
-                        uname = "updatedDocumentNotFound"
-                    )
+        user.uid = uid
+        val messages = validator(user, authToken)
+        if (messages.any { (it.code in 1..9999) })
+            throw ValidateException(user, messages)
+        val old = try {
+            repository.getByUid(uid)
+        } catch (e: DataAccessException) {
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "updatedDocumentNotFound"
                 )
-                User()
-            }
+            )
+            User()
+        }
+        return if (userSearcher.isAdmin(authToken)) {
             user._id = old._id
             if (user.password.isNotBlank())
                 user.password = BCryptPasswordEncoder().encode(user.password)
             else user.password = old.password
             repository.save(user)
-            return DefaultResponse(user, messages)
+            DefaultResponse(user, messages)
+        } else if (userSearcher.isOriginalUser(authToken, uid)) {
+            repository.save(updateFields(old, user))
+            DefaultResponse(old, messages)
         } else throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
     override fun deleteOne(uid: String) = repository.deleteByUid(uid)
+
+    private fun updateFields(oldUser: User, newUser: User) = oldUser.also {
+        oldUser.firstName = newUser.firstName
+        oldUser.secondName = newUser.secondName
+        oldUser.lastName = newUser.lastName
+        oldUser.name = newUser.name
+        oldUser.phoneNumber = newUser.phoneNumber
+        oldUser.mail = newUser.mail
+        oldUser.avatar = newUser.avatar
+        oldUser.projectUid = newUser.projectUid
+    }
 
     private fun validator(user: User, authToken: String): MutableList<ExceptionMessage> {
         val messages = mutableListOf<ExceptionMessage>()
