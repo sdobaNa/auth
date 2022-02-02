@@ -138,8 +138,7 @@ class AuthorizationServiceImpl(
         val token = try {
             JWT.create()
                 .withClaim("permission", roles)
-                .withClaim("user", foundUser.uid)
-                .withClaim("groupUid", foundUser.groupUid)
+                .withClaim("userUid", foundUser.uid)
                 .withClaim("projectUid", foundUser.projectUid)
                 .withIssuedAt(Date())
                 .withExpiresAt(Date(System.currentTimeMillis() + accessTime.toInt())).sign(
