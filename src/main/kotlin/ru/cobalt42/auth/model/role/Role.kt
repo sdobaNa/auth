@@ -10,7 +10,7 @@ data class Role(
     var uid: String = "",
     var name: String = "",
     var permissions: List<Permission> = emptyList(),
-    @Id
     @JsonIgnore
+    @Id
     var _id: ObjectId = ObjectId.get()
 )

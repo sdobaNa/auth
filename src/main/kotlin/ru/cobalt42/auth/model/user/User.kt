@@ -23,7 +23,7 @@ data class User(
     var statusId: Int = 0,
     var groupUid: String = "",
     var projectUid: String = "",
-    @Id
     @JsonIgnore
+    @Id
     var _id: ObjectId = ObjectId.get()
 )

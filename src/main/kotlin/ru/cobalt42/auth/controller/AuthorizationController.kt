@@ -10,15 +10,15 @@ import ru.cobalt42.auth.service.AuthorizationService
 @RestController
 @RequestMapping("api/auth")
 class AuthorizationController(
-    private val authorizationService: AuthorizationService
+    private val service: AuthorizationService,
 ) {
 
     @PostMapping("/generate")
     fun generate(
         @RequestBody authorization: Authorization,
-        @RequestParam(defaultValue = "false", required = false) isAdminPanel: Boolean
-    ) = ResponseEntity.ok(authorizationService.generate(authorization, isAdminPanel))
+        @RequestParam(defaultValue = "false", required = false) isAdminPanel: Boolean,
+    ) = ResponseEntity.ok(service.generate(authorization, isAdminPanel))
 
     @PostMapping("/refresh")
-    fun refresh(@RequestBody refreshData: RefreshData) = ResponseEntity.ok(authorizationService.refresh(refreshData))
+    fun refresh(@RequestBody refreshData: RefreshData) = ResponseEntity.ok(service.refresh(refreshData))
 }
