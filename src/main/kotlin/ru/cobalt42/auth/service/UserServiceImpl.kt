@@ -44,7 +44,7 @@ class UserServiceImpl(
             )
         if (user.login.isNotBlank())
             try {
-                repository.findByLogin(user.login)
+                repository.getByLogin(user.login)
                 messages.add(
                     systemMessages.getException(
                         authToken = authToken,
@@ -83,7 +83,7 @@ class UserServiceImpl(
         else
             PaginatedResponse(
                 result =
-                repository.findByLoginContainingIgnoreCase(search, paging)
+                repository.getByLoginContainingIgnoreCase(search, paging)
                     .also { total = it.totalElements }.toList(),
                 total = total
             )
@@ -91,7 +91,7 @@ class UserServiceImpl(
 
     override fun getOne(uid: String, authToken: String): DefaultResponse {
         if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid))
-            return DefaultResponse(repository.findByUid(uid).also { it.password = "" })
+            return DefaultResponse(repository.getByUid(uid).also { it.password = "" })
         else
             throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
@@ -103,7 +103,7 @@ class UserServiceImpl(
             if (messages.any { (it.code in 1..9999) })
                 throw ValidateException(user, messages)
             val old = try {
-                repository.findByUid(uid)
+                repository.getByUid(uid)
             } catch (e: DataAccessException) {
                 messages.add(
                     systemMessages.getWarning(

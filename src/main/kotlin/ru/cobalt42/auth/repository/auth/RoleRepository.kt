@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import ru.cobalt42.auth.model.role.Role
 
 interface RoleRepository : MongoRepository<Role, ObjectId> {
-    fun findByUid(uid: String): Role
-    fun findByNameContainingIgnoreCase(name: String, padding: Pageable): Page<Role>
+    fun getByUid(uid: String): Role
+    fun getByNameContainingIgnoreCase(name: String, padding: Pageable): Page<Role>
     fun deleteByUid(uid: String)
 }

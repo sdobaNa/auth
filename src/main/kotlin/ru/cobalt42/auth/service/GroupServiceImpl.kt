@@ -39,13 +39,13 @@ class GroupServiceImpl(
         else
             PaginatedResponse(
                 result =
-                repository.findByNameContainingIgnoreCase(search, paging)
+                repository.getByNameContainingIgnoreCase(search, paging)
                     .also { total = it.totalElements }.toList(),
                 total = total
             )
     }
 
-    override fun getOne(uid: String): DefaultResponse = DefaultResponse(repository.findByUid(uid))
+    override fun getOne(uid: String): DefaultResponse = DefaultResponse(repository.getByUid(uid))
 
     override fun updateOne(uid: String, group: Group, authToken: String): DefaultResponse {
         group.uid = uid
@@ -53,7 +53,7 @@ class GroupServiceImpl(
         if (messages.any { (it.code in 1..9999) })
             throw ValidateException(group, messages)
         val old = try {
-            repository.findByUid(uid)
+            repository.getByUid(uid)
         } catch (e: DataAccessException) {
             messages.add(
                 systemMessages.getWarning(

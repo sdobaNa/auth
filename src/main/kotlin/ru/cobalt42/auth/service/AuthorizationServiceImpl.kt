@@ -42,7 +42,7 @@ class AuthorizationServiceImpl(
 
     override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse {
         try {
-            val user = userRepository.findByLogin(authorization.login)
+            val user = userRepository.getByLogin(authorization.login)
             if (user.subExpDate.isNotBlank() && SimpleDateFormat("yyyy-MM-dd").parse(user.subExpDate) < Date()) {
                 user.statusId = EXPIRED.status
                 userRepository.save(user)
@@ -61,7 +61,7 @@ class AuthorizationServiceImpl(
     override fun refresh(refreshData: RefreshData): DefaultResponse {
         return generateJWT(
             refresh = try {
-                refreshRepository.findByRefresh(refreshData.refresh)
+                refreshRepository.getByRefresh(refreshData.refresh)
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
             }
@@ -74,7 +74,7 @@ class AuthorizationServiceImpl(
         isAdminPanel: Boolean = false
     ): DefaultResponse {
         val refreshEntry = try {
-            refreshRepository.findByRefresh(refresh.refresh)
+            refreshRepository.getByRefresh(refresh.refresh)
         } catch (e: EmptyResultDataAccessException) {
             Refresh()
         }
@@ -90,7 +90,7 @@ class AuthorizationServiceImpl(
                 throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
             }
             try {
-                userRepository.findByUid(JSONObject(payload)["user"].toString())
+                userRepository.getByUid(JSONObject(payload)["user"].toString())
                     .also {
                         if (user.statusId != ENABLED.status) throw RequestException(
                             "User is disabled",
@@ -124,7 +124,7 @@ class AuthorizationServiceImpl(
         }
         val userRoles = foundUser.roles.map {
             try {
-                roleRepository.findByUid(it)
+                roleRepository.getByUid(it)
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("Role not found", FORBIDDEN)
             }
@@ -150,7 +150,7 @@ class AuthorizationServiceImpl(
         }
 
         val userRefresh = try {
-            refreshRepository.findByUser(foundUser.uid)
+            refreshRepository.getByUser(foundUser.uid)
         } catch (e: EmptyResultDataAccessException) {
             throw RequestException("Refresh not found", BAD_REQUEST)
         }

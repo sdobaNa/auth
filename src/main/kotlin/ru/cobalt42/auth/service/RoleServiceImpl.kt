@@ -40,13 +40,13 @@ class RoleServiceImpl(
         else
             PaginatedResponse(
                 result =
-                repository.findByNameContainingIgnoreCase(search, paging)
+                repository.getByNameContainingIgnoreCase(search, paging)
                     .also { total = it.totalElements }.toList(),
                 total = total
             )
     }
 
-    override fun getOne(uid: String): DefaultResponse = DefaultResponse(repository.findByUid(uid))
+    override fun getOne(uid: String): DefaultResponse = DefaultResponse(repository.getByUid(uid))
 
     override fun updateOne(uid: String, role: Role, authToken: String): DefaultResponse {
         role.uid = uid
@@ -54,7 +54,7 @@ class RoleServiceImpl(
         if (messages.any { (it.code in 1..9999) })
             throw ValidateException(role, messages)
         val old = try {
-            repository.findByUid(uid)
+            repository.getByUid(uid)
         } catch (e: DataAccessException) {
             messages.add(
                 systemMessages.getWarning(

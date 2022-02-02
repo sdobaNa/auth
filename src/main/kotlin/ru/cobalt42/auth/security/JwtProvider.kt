@@ -79,7 +79,7 @@ class JwtProvider(
         }
 
         if (try {
-                userRepository.findByUid(userUid).roles.map { roleRepository.findByUid(it) }
+                userRepository.getByUid(userUid).roles.map { roleRepository.getByUid(it) }
                     .any { it.name == "admin" }
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("User or role is missing", UNAUTHORIZED)
