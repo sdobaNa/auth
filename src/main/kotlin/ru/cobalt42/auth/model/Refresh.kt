@@ -11,8 +11,8 @@ data class Refresh(
     var exp: String = "",
     var token: String = "",
     var user: String = "",
-    @Id
     @JsonIgnore
+    @Id
     var _id: ObjectId = ObjectId.get()
 
 )

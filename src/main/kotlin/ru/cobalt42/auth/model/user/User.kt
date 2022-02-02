@@ -23,7 +23,7 @@ data class User(
     var subExpDate: String = "",
     var statusId: Int = 0,
     var groupUid: String = "",
-    @Id
     @JsonIgnore
+    @Id
     var _id: ObjectId = ObjectId.get()
 )

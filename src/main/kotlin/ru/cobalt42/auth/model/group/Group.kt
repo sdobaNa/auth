@@ -10,7 +10,7 @@ data class Group(
     var uid: String = "",
     var name: String = "",
     var limits: Limits = Limits(),
-    @Id
     @JsonIgnore
+    @Id
     var _id: ObjectId = ObjectId.get(),
 )
