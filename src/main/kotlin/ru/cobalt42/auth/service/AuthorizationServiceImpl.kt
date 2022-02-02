@@ -139,6 +139,8 @@ class AuthorizationServiceImpl(
             JWT.create()
                 .withClaim("permission", roles)
                 .withClaim("user", foundUser.uid)
+                .withClaim("groupUid", foundUser.groupUid)
+                .withClaim("projectUid", foundUser.projectUid)
                 .withIssuedAt(Date())
                 .withExpiresAt(Date(System.currentTimeMillis() + accessTime.toInt())).sign(
                     Algorithm.HMAC256(key)
@@ -164,7 +166,6 @@ class AuthorizationServiceImpl(
                 token,
                 user.uid,
                 user.name,
-                user.organization,
                 user.position,
                 user.avatar
             )
