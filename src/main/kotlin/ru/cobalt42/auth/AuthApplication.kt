@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext
 import ru.cobalt42.auth.model.Refresh
+import ru.cobalt42.auth.model.group.Group
 import ru.cobalt42.auth.model.role.Role
 import ru.cobalt42.auth.model.user.User
 import ru.cobalt42.auth.util.enums.Permissions.PERMISSIONS
@@ -43,6 +44,7 @@ fun main(args: Array<String>) {
             name = "admin",
             roles = listOf(roleUid),
             statusId = ENABLED.status,
+            groupUid = "a053c3bc-69f5-4b0d-8d96-12fd2442b731",
             _id = ObjectId("6139c83a235ced2377be4f28")
         ),
         "user"
@@ -60,6 +62,13 @@ fun main(args: Array<String>) {
         Refresh(
             token = "",
             userUid = userUid,
+            _id = ObjectId("6139c983235ced2377be534c")
+        ),
+        "refresh"
+    )
+    MongoTemplate(databaseFactory, converter).save(
+        Group(
+            uid = "a053c3bc-69f5-4b0d-8d96-12fd2442b731",
             _id = ObjectId("6139c983235ced2377be534c")
         ),
         "refresh"
