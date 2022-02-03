@@ -3,7 +3,6 @@ package ru.cobalt42.auth.controller
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ru.cobalt42.auth.dto.Authorization
-import ru.cobalt42.auth.dto.RefreshData
 import ru.cobalt42.auth.service.AuthorizationService
 
 @CrossOrigin
@@ -20,5 +19,7 @@ class AuthorizationController(
     ) = ResponseEntity.ok(service.generate(authorization, isAdminPanel))
 
     @PostMapping("/refresh")
-    fun refresh(@RequestBody refreshData: RefreshData) = ResponseEntity.ok(service.refresh(refreshData))
+    fun refresh(
+        @RequestHeader("Authorization") authToken: String,
+    ) = ResponseEntity.ok(service.refresh(authToken))
 }
