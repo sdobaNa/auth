@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -24,7 +25,6 @@ import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.enums.Permissions
-import java.util.*
 import javax.annotation.PostConstruct
 
 @ExtendWith(SpringExtension::class)
@@ -57,7 +57,8 @@ class AuthorizationTest {
                 uid = "0bf6cd3f-c3d3-45b7-b6ff-7a5122411916",
                 login = "cobalt",
                 password = "$2a$10$2wggeB6Xl0tnHnMMOdd4vuANO/xcxd/h2iAZJCev48kgZ/gOeZMk.",
-                roles = listOf("ff5084b6-bcf2-43fd-beff-d47bbf4610b8")
+                roles = listOf("ff5084b6-bcf2-43fd-beff-d47bbf4610b8"),
+                statusId = 1
             )
         )
         roleRepository.save(
@@ -69,10 +70,8 @@ class AuthorizationTest {
         )
         refreshRepository.save(
             Refresh(
-                refresh = UUID.randomUUID().toString(),
-                exp = "2021-10-27T21:46:34+0500",
                 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwZXJtaXNzaW9uIjp7InBlcnNvbiI6N...",
-                user = "0bf6cd3f-c3d3-45b7-b6ff-7a5122411916"
+                userUid = "0bf6cd3f-c3d3-45b7-b6ff-7a5122411916"
             )
         )
     }
@@ -127,12 +126,14 @@ class AuthorizationTest {
 
         val refreshResponse = restTemplate.exchange(
             getPathRefresh(),
-            HttpMethod.POST,
-            HttpEntity(
-                RefreshData(
-                    request.refresh,
-                    request.token
-                )
+            HttpMethod.GET,
+            HttpEntity(null,
+                HttpHeaders().also {
+                    it.add(
+                        "Authorization",
+                        request.token
+                    )
+                }
             ),
             DefaultResponse::class.java
         )

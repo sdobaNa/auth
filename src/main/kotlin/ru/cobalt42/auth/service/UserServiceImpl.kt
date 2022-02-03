@@ -58,13 +58,7 @@ class UserServiceImpl(
                 repository.save(user)
                 refreshRepository.save(
                     Refresh(
-                        refresh = UUID.randomUUID().toString(),
-                        exp = try {
-                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date(System.currentTimeMillis() + refreshTime.toInt()))
-                        } catch (e: Throwable) {
-                            throw RequestException("Expiration date exception", HttpStatus.BAD_REQUEST)
-                        },
-                        user = user.uid
+                        userUid = user.uid
                     )
                 )
             }

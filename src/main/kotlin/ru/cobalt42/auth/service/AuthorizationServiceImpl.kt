@@ -2,6 +2,7 @@ package ru.cobalt42.auth.service
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import org.json.JSONException
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.dao.EmptyResultDataAccessException
@@ -58,69 +59,78 @@ class AuthorizationServiceImpl(
         }
     }
 
-    override fun refresh(refreshData: RefreshData): DefaultResponse {
-        return generateJWT(
-            refresh = try {
-                refreshRepository.getByRefresh(refreshData.refresh)
-            } catch (e: EmptyResultDataAccessException) {
-                throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
-            }
-        )
+    override fun refresh(authToken: String): DefaultResponse {
+        return generateJWT(authToken = authToken)
+    }
+
+    override fun changeProject(projectUid: String, authToken: String): DefaultResponse{
+        val user = try {
+            userRepository.getByUid(getTokenParameter(authToken, "userUid"))
+        } catch (e: EmptyResultDataAccessException){
+            throw RequestException("User not found", UNAUTHORIZED)
+        }
+        user.projectUid = projectUid
+        userRepository.save(user)
+        return generateJWT(user)
     }
 
     private fun generateJWT(
         user: User = User(),
-        refresh: Refresh = Refresh(),
+        authToken: String = "",
         isAdminPanel: Boolean = false
     ): DefaultResponse {
         val refreshEntry = try {
-            refreshRepository.getByRefresh(refresh.refresh)
+            if (authToken.isNotBlank()) {
+                refreshRepository.getByToken(authToken.split(" ")[1])
+            } else throw EmptyResultDataAccessException(0)
         } catch (e: EmptyResultDataAccessException) {
             Refresh()
+        } catch (e: Throwable) {
+            throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
         }
 
         val foundUser = if (user.uid.isBlank()) {
-            val payload = try {
-                String(
-                    Base64.getDecoder().decode(
-                        refreshEntry.token.split(".")[1]
-                    )
-                )
-            } catch (e: Throwable) {
-                throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
-            }
             try {
-                userRepository.getByUid(JSONObject(payload)["user"].toString())
+                userRepository.getByUid(getTokenParameter(refreshEntry.token, "userUid"))
                     .also {
-                        if (user.statusId != ENABLED.status) throw RequestException(
+                        if (it.statusId != ENABLED.status) throw RequestException(
                             "User is disabled",
                             BAD_REQUEST
                         )
                     }
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("User not found", BAD_REQUEST)
-            } catch (e: Throwable) {
+            } catch (e: JSONException) {
                 throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
             }
         } else user
 
-        val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-        try {
-            if (refreshEntry.refresh.isNotBlank() && refreshEntry.exp.isNotBlank()) {
-                if (dateFormatter.parse(refreshEntry.exp).time - Date(System.currentTimeMillis() + 1000000).time < 0)
-                    throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
-                else if (dateFormatter.parse(refreshEntry.exp).time - Date(System.currentTimeMillis() + 1000000).time >= 0) {
-                    refreshEntry.refresh = UUID.randomUUID().toString()
-                    refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + refreshTime.toInt()))
-                }
-            } else {
-                refreshEntry.refresh = UUID.randomUUID().toString()
-                refreshEntry.exp = dateFormatter.format(Date(System.currentTimeMillis() + refreshTime.toInt()))
-            }
+        val refreshToken = try {
+            JWT.create()
+                .withClaim("userUid", foundUser.uid)
+                .withIssuedAt(Date())
+                .withExpiresAt(Date(System.currentTimeMillis() + refreshTime.toInt())).sign(
+                    Algorithm.HMAC256(key)
+                )
         } catch (e: NumberFormatException) {
-            throw RequestException("Invalid property token.refresh.time", BAD_REQUEST)
+            throw RequestException("Invalid property token.access.time", BAD_REQUEST)
         } catch (e: Throwable) {
-            throw RequestException("Incorrect expiration date", BAD_REQUEST)
+            throw RequestException("Denied JWT create", BAD_REQUEST)
+        }
+        if (refreshEntry.token.isNotBlank()) {
+            try {
+                if (JWT.decode(authToken.split(" ")[1]).expiresAt.time < Date(System.currentTimeMillis()).time)
+                    throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
+                else {
+                    refreshEntry.token = refreshToken
+                }
+            } catch (e: NumberFormatException) {
+                throw RequestException("Invalid property token.refresh.time", BAD_REQUEST)
+            } catch (e: Throwable) {
+                throw RequestException("Incorrect expiration date", UNAUTHORIZED)
+            }
+        } else {
+            refreshEntry.token = refreshToken
         }
         val userRoles = foundUser.roles.map {
             try {
@@ -151,17 +161,15 @@ class AuthorizationServiceImpl(
         }
 
         val userRefresh = try {
-            refreshRepository.getByUser(foundUser.uid)
+            refreshRepository.getByUserUid(foundUser.uid)
         } catch (e: EmptyResultDataAccessException) {
             throw RequestException("Refresh not found", BAD_REQUEST)
         }
-        userRefresh.refresh = refreshEntry.refresh
-        userRefresh.exp = refreshEntry.exp
-        userRefresh.token = token
+        userRefresh.token = refreshEntry.token
         refreshRepository.save(userRefresh)
         return DefaultResponse(
             RefreshData(
-                userRefresh.refresh,
+                userRefresh.token,
                 token,
                 user.uid,
                 user.name,
@@ -185,5 +193,24 @@ class AuthorizationServiceImpl(
             }
         }
         return rolesMap
+    }
+
+    private fun getTokenParameter(authToken: String, parameter: String): String {
+        val payload = try {
+            String(
+                Base64.getDecoder().decode(
+                    authToken.split(".")[1]
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
+        } catch (e: IndexOutOfBoundsException){
+            throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
+        }
+        return try {
+            JSONObject(payload)[parameter].toString()
+        } catch (e: Throwable) {
+            throw RequestException("Token parameter is missing", UNAUTHORIZED)
+        }
     }
 }

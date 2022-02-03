@@ -6,5 +6,6 @@ import ru.cobalt42.auth.dto.RefreshData
 
 interface AuthorizationService {
     fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse
-    fun refresh(refreshData: RefreshData): DefaultResponse
+    fun refresh(authToken: String): DefaultResponse
+    fun changeProject(projectUid: String, authToken: String): DefaultResponse
 }

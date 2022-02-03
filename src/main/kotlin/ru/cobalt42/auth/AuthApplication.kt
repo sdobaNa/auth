@@ -58,10 +58,8 @@ fun main(args: Array<String>) {
     )
     MongoTemplate(databaseFactory, converter).save(
         Refresh(
-            refresh = refreshUid,
-            exp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date(System.currentTimeMillis() + 36000000)),
             token = "",
-            user = userUid,
+            userUid = userUid,
             _id = ObjectId("6139c983235ced2377be534c")
         ),
         "refresh"
