@@ -43,6 +43,6 @@ class WebSecurityConfig(
     }
 
     override fun configure(web: WebSecurity) {
-        web.ignoring().antMatchers("/api/auth/generate", "api/auth/refresh")
+        web.ignoring().antMatchers("/api/auth/generate", "/api/auth/refresh/**")
     }
 }

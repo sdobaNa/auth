@@ -18,8 +18,15 @@ class AuthorizationController(
         @RequestParam(defaultValue = "false", required = false) isAdminPanel: Boolean,
     ) = ResponseEntity.ok(service.generate(authorization, isAdminPanel))
 
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     fun refresh(
         @RequestHeader("Authorization") authToken: String,
     ) = ResponseEntity.ok(service.refresh(authToken))
+
+    @GetMapping("/refresh/{uid}")
+    fun changeProject(
+        @RequestHeader("Authorization") authToken: String,
+        @PathVariable("uid", required = false) projectUid: String
+    ) = ResponseEntity.ok(service.changeProject(projectUid, authToken))
+
 }

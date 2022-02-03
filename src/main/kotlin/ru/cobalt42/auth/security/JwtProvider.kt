@@ -61,7 +61,7 @@ class JwtProvider(
             throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
         }
         val userUid = try {
-            JSONObject(payload)["user"].toString()
+            JSONObject(payload)["userUid"].toString()
         } catch (e: Throwable) {
             throw RequestException("System error", INTERNAL_SERVER_ERROR)
         }
