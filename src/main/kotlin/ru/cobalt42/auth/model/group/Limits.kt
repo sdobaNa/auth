@@ -4,5 +4,5 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 @Document
 data class Limits(
-    var projectLimit: Int = 0,
+    var projectLimit: Int = 1,
 )
