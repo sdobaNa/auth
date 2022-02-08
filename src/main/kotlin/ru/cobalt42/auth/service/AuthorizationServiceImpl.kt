@@ -13,12 +13,13 @@ import ru.cobalt42.auth.dto.Authorization
 import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
 import ru.cobalt42.auth.exception.RequestException
-import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.role.Role
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.auth.Refresh
+import ru.cobalt42.auth.model.auth.role.Role
+import ru.cobalt42.auth.model.auth.user.User
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
+import ru.cobalt42.auth.repository.common.ProjectRepository
 import ru.cobalt42.auth.util.enums.Permissions.PERMISSIONS
 import ru.cobalt42.auth.util.enums.UserStatuses.ENABLED
 import ru.cobalt42.auth.util.enums.UserStatuses.EXPIRED
@@ -30,6 +31,7 @@ class AuthorizationServiceImpl(
     private val userRepository: UserRepository,
     private val refreshRepository: RefreshRepository,
     private val roleRepository: RoleRepository,
+    private val projectRepository: ProjectRepository
 ) : AuthorizationService {
 
     @Value("\${token.refresh.time}")
@@ -63,15 +65,22 @@ class AuthorizationServiceImpl(
         return generateJWT(authToken = authToken)
     }
 
-    override fun changeProject(projectUid: String, authToken: String): DefaultResponse{
+    override fun changeProject(projectUid: String, authToken: String): DefaultResponse {
         val user = try {
             userRepository.getByUid(getTokenParameter(authToken, "userUid"))
-        } catch (e: EmptyResultDataAccessException){
+        } catch (e: EmptyResultDataAccessException) {
             throw RequestException("User not found", UNAUTHORIZED)
         }
-        user.projectUid = projectUid
-        userRepository.save(user)
-        return generateJWT(user)
+        val project = try {
+            projectRepository.getByUid(projectUid)
+        } catch (e: EmptyResultDataAccessException) {
+            throw RequestException("Project not found", UNAUTHORIZED)
+        }
+        if (project.objectInfo.groupUid == user.groupUid) {
+            user.projectUid = projectUid
+            userRepository.save(user)
+            return generateJWT(user)
+        } else throw RequestException("User group does not match", FORBIDDEN)
     }
 
     private fun generateJWT(
@@ -204,7 +213,7 @@ class AuthorizationServiceImpl(
             )
         } catch (e: IllegalArgumentException) {
             throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
-        } catch (e: IndexOutOfBoundsException){
+        } catch (e: IndexOutOfBoundsException) {
             throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
         }
         return try {

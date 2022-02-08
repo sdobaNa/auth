@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ru.cobalt42.auth.dto.PaginatedResponse
-import ru.cobalt42.auth.model.group.Group
+import ru.cobalt42.auth.model.auth.group.Group
 import ru.cobalt42.auth.service.GroupService
 
 @CrossOrigin

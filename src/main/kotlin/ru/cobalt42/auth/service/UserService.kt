@@ -3,7 +3,7 @@ package ru.cobalt42.auth.service
 import org.springframework.data.domain.Pageable
 import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.PaginatedResponse
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.auth.user.User
 
 interface UserService {
     fun createOne(user: User, authToken: String): DefaultResponse

@@ -9,14 +9,12 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory
 import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext
-import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.group.Group
-import ru.cobalt42.auth.model.role.Role
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.auth.Refresh
+import ru.cobalt42.auth.model.auth.group.Group
+import ru.cobalt42.auth.model.auth.role.Role
+import ru.cobalt42.auth.model.auth.user.User
 import ru.cobalt42.auth.util.enums.Permissions.PERMISSIONS
-import ru.cobalt42.auth.util.enums.UserStatuses
 import ru.cobalt42.auth.util.enums.UserStatuses.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 @SpringBootApplication

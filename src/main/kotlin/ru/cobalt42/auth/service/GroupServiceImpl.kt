@@ -7,7 +7,7 @@ import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.ValidateException
-import ru.cobalt42.auth.model.group.Group
+import ru.cobalt42.auth.model.auth.group.Group
 import ru.cobalt42.auth.repository.auth.GroupRepository
 import ru.cobalt42.auth.util.SystemMessages
 import java.util.*

@@ -1,6 +1,6 @@
 package ru.cobalt42.auth.dto
 
-import ru.cobalt42.auth.model.user.Logo
+import ru.cobalt42.auth.model.auth.user.Logo
 
 data class RefreshData(
     val refresh: String = "",

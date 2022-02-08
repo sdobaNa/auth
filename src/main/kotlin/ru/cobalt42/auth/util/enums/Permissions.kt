@@ -1,6 +1,6 @@
 package ru.cobalt42.auth.util.enums
 
-import ru.cobalt42.auth.model.role.Permission
+import ru.cobalt42.auth.model.auth.role.Permission
 
 enum class Permissions(var permissions: List<Permission>) {
     PERMISSIONS(

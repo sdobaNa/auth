@@ -18,9 +18,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.cobalt42.auth.dto.Authorization
 import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.RefreshData
-import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.role.Role
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.auth.Refresh
+import ru.cobalt42.auth.model.auth.role.Role
+import ru.cobalt42.auth.model.auth.user.User
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.RoleRepository
 import ru.cobalt42.auth.repository.auth.UserRepository

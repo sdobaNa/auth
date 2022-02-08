@@ -48,6 +48,10 @@ class MongoConfig {
     @ConfigurationProperties(prefix = "mongodb.auth")
     fun getAuth(): MongoProperties = MongoProperties()
 
+    @Bean(name = ["commonDocument"])
+    @ConfigurationProperties(prefix = "mongodb.common")
+    fun getCommon(): MongoProperties = MongoProperties()
+
 //    ---------
 
     @Primary
@@ -55,11 +59,20 @@ class MongoConfig {
     fun authFactory(mongo: MongoProperties): MongoDatabaseFactory =
         SimpleMongoClientDatabaseFactory(MongoClients.create("mongodb://${mongo.host}:${mongo.port}"), mongo.database)
 
+    @Bean
+    fun commonFactory(mongo: MongoProperties): MongoDatabaseFactory =
+        SimpleMongoClientDatabaseFactory(MongoClients.create("mongodb://${mongoHost}:${mongoPort}"), mongo.database)
+
 //    ---------
 
     @Primary
     @Bean(name = ["authMongoTemplate"])
     fun authMongoTemplate(): MongoTemplate = MongoTemplate(
         authFactory(getAuth()), mappingMongoConverter()
+    )
+
+    @Bean(name = ["commonMongoTemplate"])
+    fun commonMongoTemplate(): MongoTemplate = MongoTemplate(
+        commonFactory(getCommon()), mappingMongoConverter()
     )
 }

@@ -3,7 +3,7 @@ package ru.cobalt42.auth.service
 import org.springframework.data.domain.Pageable
 import ru.cobalt42.auth.dto.DefaultResponse
 import ru.cobalt42.auth.dto.PaginatedResponse
-import ru.cobalt42.auth.model.group.Group
+import ru.cobalt42.auth.model.auth.group.Group
 
 interface GroupService {
     fun createOne(group: Group, authToken: String): DefaultResponse

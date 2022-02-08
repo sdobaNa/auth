@@ -4,7 +4,7 @@ import org.bson.types.ObjectId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository
-import ru.cobalt42.auth.model.role.Role
+import ru.cobalt42.auth.model.auth.role.Role
 
 interface RoleRepository : MongoRepository<Role, ObjectId> {
     fun getByUid(uid: String): Role

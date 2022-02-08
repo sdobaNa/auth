@@ -12,13 +12,12 @@ import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.RequestException
 import ru.cobalt42.auth.exception.ValidateException
-import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.auth.Refresh
+import ru.cobalt42.auth.model.auth.user.User
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.SystemMessages
 import ru.cobalt42.auth.util.UserSearcher
-import java.text.SimpleDateFormat
 import java.util.*
 
 @Service

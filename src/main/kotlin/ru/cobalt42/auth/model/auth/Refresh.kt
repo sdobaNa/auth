@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.model
+package ru.cobalt42.auth.model.auth
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.bson.types.ObjectId
