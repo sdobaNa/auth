@@ -18,8 +18,7 @@ class UserSearcher(
 
     fun isAdmin(authToken: String): Boolean {
         return try {
-            userRepository.getByUid(getUserUid(authToken, "userUid")).roles.map { roleRepository.getByUid(it) }
-                .any { it.name == "admin" }
+            userRepository.getByUid(getUserUid(authToken, "userUid")).isAdmin
         } catch (e: EmptyResultDataAccessException) {
             throw RequestException("User or role is missing", UNAUTHORIZED)
         }
