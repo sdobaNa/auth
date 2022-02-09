@@ -23,6 +23,7 @@ data class User(
     var statusId: Int = 0,
     var groupUid: String = "",
     var projectUid: String = "",
+    var organization: String = "",
     @JsonIgnore
     var superAdmin: Boolean = false,
     @JsonIgnore
