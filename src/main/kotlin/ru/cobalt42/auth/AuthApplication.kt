@@ -42,7 +42,8 @@ fun main(args: Array<String>) {
             roles = listOf(roleUid),
             statusId = ENABLED.status,
             groupUid = "a053c3bc-69f5-4b0d-8d96-12fd2442b731",
-            _id = ObjectId("6139c83a235ced2377be4f28")
+            _id = ObjectId("6139c83a235ced2377be4f28"),
+            isAdmin = true
         ),
         "user"
     )
