@@ -67,6 +67,7 @@ fun main(args: Array<String>) {
     MongoTemplate(databaseFactory, converter).save(
         Group(
             uid = "a053c3bc-69f5-4b0d-8d96-12fd2442b731",
+            name = "admin",
             _id = ObjectId("6139c983235ced3228be534c")
         ),
         "group"
