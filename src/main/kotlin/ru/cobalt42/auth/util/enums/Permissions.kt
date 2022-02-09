@@ -223,7 +223,7 @@ enum class Permissions(var permissions: List<Permission>) {
             Permission(
                 0,
                 "certificate",
-                "Сертификат",
+                "Иное удостоверение",
             ),
             Permission(
                 0,
@@ -324,6 +324,26 @@ enum class Permissions(var permissions: List<Permission>) {
                 0,
                 "parse",
                 "Импорт данных"
+            ),
+            Permission(
+                0,
+                "chefWelderCertificate",
+                "Удостоверение руководителя сварочных работ"
+            ),
+            Permission(
+                0,
+                "defectoscopistCertificate",
+                "Удостоверение дефектоскописта"
+            ),
+            Permission(
+                0,
+                "fitterCertificate",
+                "Удостоверение монтажника высокопрочных болтов"
+            ),
+            Permission(
+                0,
+                "heatTreaterCertificate",
+                "Удостоверение оператора-термиста"
             )
         )
     )
