@@ -24,7 +24,7 @@ data class User(
     var groupUid: String = "",
     var projectUid: String = "",
     @JsonIgnore
-    var isAdmin: Boolean = false,
+    var superAdmin: Boolean = false,
     @JsonIgnore
     @Id
     var _id: ObjectId = ObjectId.get()

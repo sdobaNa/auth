@@ -18,7 +18,7 @@ class UserSearcher(
 
     fun isAdmin(authToken: String): Boolean {
         return try {
-            userRepository.getByUid(getUserUid(authToken, "userUid")).isAdmin
+            userRepository.getByUid(getUserUid(authToken, "userUid")).superAdmin
         } catch (e: EmptyResultDataAccessException) {
             throw RequestException("User or role is missing", UNAUTHORIZED)
         }
