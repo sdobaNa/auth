@@ -9,13 +9,15 @@ import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.ValidateException
 import ru.cobalt42.auth.model.auth.group.Group
 import ru.cobalt42.auth.repository.auth.GroupRepository
+import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.SystemMessages
 import java.util.*
 
 @Service
 class GroupServiceImpl(
     private val repository: GroupRepository,
-    private val systemMessages: SystemMessages
+    private val systemMessages: SystemMessages,
+    private val userRepository: UserRepository
 ) : GroupService {
     override fun createOne(group: Group, authToken: String): DefaultResponse {
         val messages = validator(group, authToken)
@@ -68,7 +70,12 @@ class GroupServiceImpl(
         return DefaultResponse(group, messages)
     }
 
-    override fun deleteOne(uid: String) = repository.deleteByUid(uid)
+    override fun deleteOne(uid: String) {
+        userRepository.getAllByGroupUid(uid).forEach {
+            userRepository.save(it.also { user -> user.groupUid = "'" })
+        }
+        repository.deleteByUid(uid)
+    }
 
     private fun validator(group: Group, authToken: String): MutableList<ExceptionMessage> {
         val message = mutableListOf<ExceptionMessage>()

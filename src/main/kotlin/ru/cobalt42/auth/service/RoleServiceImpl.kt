@@ -9,13 +9,15 @@ import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.ValidateException
 import ru.cobalt42.auth.model.auth.role.Role
 import ru.cobalt42.auth.repository.auth.RoleRepository
+import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.SystemMessages
 import java.util.*
 
 @Service
 class RoleServiceImpl(
     private val repository: RoleRepository,
-    private val systemMessages: SystemMessages
+    private val systemMessages: SystemMessages,
+    private val userRepository: UserRepository
 ) : RoleService {
 
     override fun createOne(role: Role, authToken: String): DefaultResponse {
@@ -69,7 +71,12 @@ class RoleServiceImpl(
         return DefaultResponse(role, messages)
     }
 
-    override fun deleteOne(uid: String) = repository.deleteByUid(uid)
+    override fun deleteOne(uid: String) {
+        userRepository.getAllByRole(uid).forEach {
+            userRepository.save(it.also { user -> user.roles = user.roles.filter { role -> role != uid } })
+        }
+        repository.deleteByUid(uid)
+    }
 
     private fun validator(role: Role, authToken: String): MutableList<ExceptionMessage> {
         val message = mutableListOf<ExceptionMessage>()
