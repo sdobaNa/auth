@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.mongodb.MongoDatabaseFactory
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory
@@ -19,9 +20,12 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext
 
 @Configuration
 class MongoConfig {
+
+    @Lazy
     @Autowired
     lateinit var mongoDbFactory: MongoDatabaseFactory
 
+    @Lazy
     @Autowired
     lateinit var mongoMappingContext: MongoMappingContext
 

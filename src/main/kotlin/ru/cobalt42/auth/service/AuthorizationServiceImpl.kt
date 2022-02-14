@@ -31,7 +31,7 @@ class AuthorizationServiceImpl(
     private val userRepository: UserRepository,
     private val refreshRepository: RefreshRepository,
     private val roleRepository: RoleRepository,
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
 ) : AuthorizationService {
 
     @Value("\${token.refresh.time}")
@@ -86,7 +86,7 @@ class AuthorizationServiceImpl(
     private fun generateJWT(
         user: User = User(),
         authToken: String = "",
-        isAdminPanel: Boolean = false
+        isAdminPanel: Boolean = false,
     ): DefaultResponse {
         val refreshEntry = try {
             if (authToken.isNotBlank()) {
