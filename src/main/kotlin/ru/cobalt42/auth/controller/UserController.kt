@@ -13,12 +13,12 @@ import ru.cobalt42.auth.service.UserService
 @RestController
 @RequestMapping("api/auth/user")
 class UserController(
-    private val service: UserService
+    private val service: UserService,
 ) {
     @PostMapping
     fun createOne(
         @RequestBody user: User,
-        @RequestHeader("Authorization") authToken: String
+        @RequestHeader("Authorization") authToken: String,
     ) = try {
         ResponseEntity.ok(service.createOne(user, authToken))
     } catch (e: EmptyResultDataAccessException) {
@@ -30,7 +30,7 @@ class UserController(
         @RequestParam(defaultValue = "1", required = false) page: Int,
         @RequestParam(defaultValue = "50", required = false) size: Int,
         @RequestParam(defaultValue = "", required = false) search: String,
-    ): ResponseEntity<PaginatedResponse> {
+    ): ResponseEntity<PaginatedResponse<User>> {
         val paging = PageRequest.of(page - 1, size)
         return ResponseEntity.ok(service.getAll(paging, search))
     }
@@ -38,7 +38,7 @@ class UserController(
     @GetMapping("/{uid}")
     fun getOne(
         @PathVariable uid: String,
-        @RequestHeader("Authorization") authToken: String
+        @RequestHeader("Authorization") authToken: String,
     ) = try {
         ResponseEntity.ok(service.getOne(uid, authToken))
     } catch (e: EmptyResultDataAccessException) {
@@ -49,7 +49,7 @@ class UserController(
     fun updateOne(
         @PathVariable("uid") uid: String,
         @RequestBody user: User,
-        @RequestHeader("Authorization") authToken: String
+        @RequestHeader("Authorization") authToken: String,
     ) = try {
         ResponseEntity.ok(service.updateOne(uid, user, authToken))
     } catch (e: EmptyResultDataAccessException) {

@@ -30,7 +30,7 @@ class RoleController(
         @RequestParam(defaultValue = "1", required = false) page: Int,
         @RequestParam(defaultValue = "50", required = false) size: Int,
         @RequestParam(defaultValue = "", required = false) search: String,
-    ): ResponseEntity<PaginatedResponse> {
+    ): ResponseEntity<PaginatedResponse<Role>> {
         val paging = PageRequest.of(page - 1, size)
         return ResponseEntity.ok(service.getAll(paging, search))
     }

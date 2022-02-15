@@ -17,10 +17,10 @@ import java.util.*
 class RoleServiceImpl(
     private val repository: RoleRepository,
     private val systemMessages: SystemMessages,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : RoleService {
 
-    override fun createOne(role: Role, authToken: String): DefaultResponse {
+    override fun createOne(role: Role, authToken: String): DefaultResponse<Role> {
         val messages = validator(role, authToken)
         if (messages.isEmpty()) {
             role.uid = UUID.randomUUID().toString()
@@ -30,7 +30,7 @@ class RoleServiceImpl(
         return DefaultResponse(role, messages)
     }
 
-    override fun getAll(paging: Pageable, search: String): PaginatedResponse {
+    override fun getAll(paging: Pageable, search: String): PaginatedResponse<Role> {
         var total: Long
         return if (search.isBlank())
             PaginatedResponse(
@@ -48,9 +48,9 @@ class RoleServiceImpl(
             )
     }
 
-    override fun getOne(uid: String): DefaultResponse = DefaultResponse(repository.getByUid(uid))
+    override fun getOne(uid: String): DefaultResponse<Role> = DefaultResponse(repository.getByUid(uid))
 
-    override fun updateOne(uid: String, role: Role, authToken: String): DefaultResponse {
+    override fun updateOne(uid: String, role: Role, authToken: String): DefaultResponse<Role> {
         role.uid = uid
         val messages = validator(role, authToken)
         if (messages.any { (it.code in 1..9999) })

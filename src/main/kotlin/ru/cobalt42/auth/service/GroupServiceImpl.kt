@@ -17,9 +17,9 @@ import java.util.*
 class GroupServiceImpl(
     private val repository: GroupRepository,
     private val systemMessages: SystemMessages,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : GroupService {
-    override fun createOne(group: Group, authToken: String): DefaultResponse {
+    override fun createOne(group: Group, authToken: String): DefaultResponse<Group> {
         val messages = validator(group, authToken)
         if (messages.isEmpty()) {
             group.uid = UUID.randomUUID().toString()
@@ -29,7 +29,7 @@ class GroupServiceImpl(
         return DefaultResponse(group, messages)
     }
 
-    override fun getAll(paging: Pageable, search: String): PaginatedResponse {
+    override fun getAll(paging: Pageable, search: String): PaginatedResponse<Group> {
         var total: Long
         return if (search.isBlank())
             PaginatedResponse(
@@ -47,9 +47,9 @@ class GroupServiceImpl(
             )
     }
 
-    override fun getOne(uid: String): DefaultResponse = DefaultResponse(repository.getByUid(uid))
+    override fun getOne(uid: String): DefaultResponse<Group> = DefaultResponse(repository.getByUid(uid))
 
-    override fun updateOne(uid: String, group: Group, authToken: String): DefaultResponse {
+    override fun updateOne(uid: String, group: Group, authToken: String): DefaultResponse<Group> {
         group.uid = uid
         val messages = validator(group, authToken)
         if (messages.any { (it.code in 1..9999) })
