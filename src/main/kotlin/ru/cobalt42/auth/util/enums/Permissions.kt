@@ -327,7 +327,7 @@ enum class Permissions(var permissions: List<Permission>) {
             ),
             Permission(
                 0,
-                "chefWelderCertificate",
+                "chiefWelderCertificate",
                 "Удостоверение руководителя сварочных работ"
             ),
             Permission(
