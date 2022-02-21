@@ -25,13 +25,13 @@ class UserServiceImpl(
     private val repository: UserRepository,
     private val refreshRepository: RefreshRepository,
     private val systemMessages: SystemMessages,
-    private val userSearcher: UserSearcher
+    private val userSearcher: UserSearcher,
 ) : UserService {
 
     @Value("\${token.refresh.time}")
     private lateinit var refreshTime: String
 
-    override fun createOne(user: User, authToken: String): DefaultResponse {
+    override fun createOne(user: User, authToken: String): DefaultResponse<User> {
         val messages = validator(user, authToken)
         if (user.password.isBlank())
             messages.add(
@@ -64,7 +64,7 @@ class UserServiceImpl(
         return DefaultResponse(user, messages)
     }
 
-    override fun getAll(paging: Pageable, search: String): PaginatedResponse {
+    override fun getAll(paging: Pageable, search: String): PaginatedResponse<User> {
         var total: Long
         return if (search.isBlank())
             PaginatedResponse(
@@ -82,14 +82,14 @@ class UserServiceImpl(
             )
     }
 
-    override fun getOne(uid: String, authToken: String): DefaultResponse {
+    override fun getOne(uid: String, authToken: String): DefaultResponse<User> {
         if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid))
             return DefaultResponse(repository.getByUid(uid).also { it.password = "" })
         else
             throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
-    override fun updateOne(uid: String, user: User, authToken: String): DefaultResponse {
+    override fun updateOne(uid: String, user: User, authToken: String): DefaultResponse<User> {
         user.uid = uid
         val messages = validator(user, authToken)
         if (messages.any { (it.code in 1..9999) })

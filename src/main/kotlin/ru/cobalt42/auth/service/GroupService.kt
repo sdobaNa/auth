@@ -6,9 +6,9 @@ import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.model.auth.group.Group
 
 interface GroupService {
-    fun createOne(group: Group, authToken: String): DefaultResponse
-    fun getAll(paging: Pageable, search: String): PaginatedResponse
-    fun getOne(uid: String): DefaultResponse
-    fun updateOne(uid: String, group: Group, authToken: String): DefaultResponse
+    fun createOne(group: Group, authToken: String): DefaultResponse<Group>
+    fun getAll(paging: Pageable, search: String): PaginatedResponse<Group>
+    fun getOne(uid: String): DefaultResponse<Group>
+    fun updateOne(uid: String, group: Group, authToken: String): DefaultResponse<Group>
     fun deleteOne(uid: String)
 }

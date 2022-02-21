@@ -43,7 +43,7 @@ class AuthorizationServiceImpl(
     @Value("\${security.jwt.token.secret-key}")
     private lateinit var key: String
 
-    override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse {
+    override fun generate(authorization: Authorization, isAdminPanel: Boolean): DefaultResponse<RefreshData> {
         try {
             val user = userRepository.getByLogin(authorization.login)
             if (user.subExpDate.isNotBlank() && SimpleDateFormat("yyyy-MM-dd").parse(user.subExpDate) < Date()) {
@@ -61,11 +61,11 @@ class AuthorizationServiceImpl(
         }
     }
 
-    override fun refresh(authToken: String): DefaultResponse {
+    override fun refresh(authToken: String): DefaultResponse<RefreshData> {
         return generateJWT(authToken = authToken)
     }
 
-    override fun changeProject(projectUid: String, authToken: String): DefaultResponse {
+    override fun changeProject(projectUid: String, authToken: String): DefaultResponse<RefreshData> {
         val user = try {
             userRepository.getByUid(getTokenParameter(authToken, "userUid"))
         } catch (e: EmptyResultDataAccessException) {
@@ -87,7 +87,7 @@ class AuthorizationServiceImpl(
         user: User = User(),
         authToken: String = "",
         isAdminPanel: Boolean = false,
-    ): DefaultResponse {
+    ): DefaultResponse<RefreshData> {
         val refreshEntry = try {
             if (authToken.isNotBlank()) {
                 refreshRepository.getByToken(authToken.split(" ")[1])
