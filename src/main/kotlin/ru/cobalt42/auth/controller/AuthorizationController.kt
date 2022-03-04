@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.collector
+package ru.cobalt42.auth.controller
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -14,8 +14,10 @@ class AuthorizationController(
 ) {
 
     @PostMapping("/generate")
-    fun generate(@RequestBody authorization: Authorization) =
-        ResponseEntity.ok(authorizationService.generate(authorization))
+    fun generate(
+        @RequestBody authorization: Authorization,
+        @RequestParam(defaultValue = "false", required = false) isAdminPanel: Boolean
+    ) = ResponseEntity.ok(authorizationService.generate(authorization, isAdminPanel))
 
     @PostMapping("/refresh")
     fun refresh(@RequestBody refreshData: RefreshData) = ResponseEntity.ok(authorizationService.refresh(refreshData))
