@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
 
     MongoTemplate(databaseFactory, converter).save(
         User(
-            uid = "8041e99f-daeb-4b8f-8403-8a92f3cf7550",
+            uid = "superPuperUidAdmina",
             login = "cobalt",
             password = "\$2a\$10\$2wggeB6Xl0tnHnMMOdd4vuANO/xcxd/h2iAZJCev48kgZ/gOeZMk.",
             name = "admin",
@@ -58,7 +58,7 @@ fun main(args: Array<String>) {
     MongoTemplate(databaseFactory, converter).save(
         Refresh(
             token = "",
-            userUid = "8041e99f-daeb-4b8f-8403-8a92f3cf7550",
+            userUid = "superPuperUidAdmina",
             _id = ObjectId("6139c983235ced2377be534c")
         ),
         "refresh"
