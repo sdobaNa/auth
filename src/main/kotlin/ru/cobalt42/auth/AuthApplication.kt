@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
             login = "cobalt",
             password = "\$2a\$10\$2wggeB6Xl0tnHnMMOdd4vuANO/xcxd/h2iAZJCev48kgZ/gOeZMk.",
             name = "admin",
-            roles = listOf("superPuperUidAdminaRole"),
+            roles = listOf("superPuperUidRoleAdmina"),
             statusId = ENABLED.status,
             groupUid = "a053c3bc-69f5-4b0d-8d96-12fd2442b731",
             _id = ObjectId("6139c83a235ced2377be4f28"),
@@ -45,7 +45,7 @@ fun main(args: Array<String>) {
     )
     MongoTemplate(databaseFactory, converter).save(
         Role(
-            uid = "superPuperUidAdminaRole",
+            uid = "superPuperUidRoleAdmina",
             name = "admin",
             permissions = PERMISSIONS.permissions.map { it.copy(permissionLevel = 4) },
             _id = ObjectId("6139c83a235ced2377be4f26")
