@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.mongodb.MongoDatabaseFactory
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory
@@ -19,9 +20,12 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext
 
 @Configuration
 class MongoConfig {
+
+    @Lazy
     @Autowired
     lateinit var mongoDbFactory: MongoDatabaseFactory
 
+    @Lazy
     @Autowired
     lateinit var mongoMappingContext: MongoMappingContext
 
@@ -48,6 +52,10 @@ class MongoConfig {
     @ConfigurationProperties(prefix = "mongodb.auth")
     fun getAuth(): MongoProperties = MongoProperties()
 
+    @Bean(name = ["commonDocument"])
+    @ConfigurationProperties(prefix = "mongodb.common")
+    fun getCommon(): MongoProperties = MongoProperties()
+
 //    ---------
 
     @Primary
@@ -55,11 +63,20 @@ class MongoConfig {
     fun authFactory(mongo: MongoProperties): MongoDatabaseFactory =
         SimpleMongoClientDatabaseFactory(MongoClients.create("mongodb://${mongo.host}:${mongo.port}"), mongo.database)
 
+    @Bean
+    fun commonFactory(mongo: MongoProperties): MongoDatabaseFactory =
+        SimpleMongoClientDatabaseFactory(MongoClients.create("mongodb://${mongoHost}:${mongoPort}"), mongo.database)
+
 //    ---------
 
     @Primary
     @Bean(name = ["authMongoTemplate"])
     fun authMongoTemplate(): MongoTemplate = MongoTemplate(
         authFactory(getAuth()), mappingMongoConverter()
+    )
+
+    @Bean(name = ["commonMongoTemplate"])
+    fun commonMongoTemplate(): MongoTemplate = MongoTemplate(
+        commonFactory(getCommon()), mappingMongoConverter()
     )
 }

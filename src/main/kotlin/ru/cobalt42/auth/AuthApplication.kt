@@ -9,13 +9,12 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory
 import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext
-import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.role.Role
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.auth.Refresh
+import ru.cobalt42.auth.model.auth.group.Group
+import ru.cobalt42.auth.model.auth.role.Role
+import ru.cobalt42.auth.model.auth.user.User
 import ru.cobalt42.auth.util.enums.Permissions.PERMISSIONS
-import ru.cobalt42.auth.util.enums.UserStatuses
 import ru.cobalt42.auth.util.enums.UserStatuses.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 @SpringBootApplication
@@ -32,7 +31,6 @@ fun main(args: Array<String>) {
 
     fun getUid() = UUID.randomUUID().toString()
     val userUid = getUid()
-    val refreshUid = getUid()
     val roleUid = getUid()
 
     MongoTemplate(databaseFactory, converter).save(
@@ -43,7 +41,9 @@ fun main(args: Array<String>) {
             name = "admin",
             roles = listOf(roleUid),
             statusId = ENABLED.status,
-            _id = ObjectId("6139c83a235ced2377be4f28")
+            groupUid = "a053c3bc-69f5-4b0d-8d96-12fd2442b731",
+            _id = ObjectId("6139c83a235ced2377be4f28"),
+            superAdmin = true
         ),
         "user"
     )
@@ -58,12 +58,18 @@ fun main(args: Array<String>) {
     )
     MongoTemplate(databaseFactory, converter).save(
         Refresh(
-            refresh = refreshUid,
-            exp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date(System.currentTimeMillis() + 36000000)),
             token = "",
-            user = userUid,
+            userUid = userUid,
             _id = ObjectId("6139c983235ced2377be534c")
         ),
         "refresh"
+    )
+    MongoTemplate(databaseFactory, converter).save(
+        Group(
+            uid = "a053c3bc-69f5-4b0d-8d96-12fd2442b731",
+            name = "admin",
+            _id = ObjectId("6139c983235ced3228be534c")
+        ),
+        "group"
     )
 }

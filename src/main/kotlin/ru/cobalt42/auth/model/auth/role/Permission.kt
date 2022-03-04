@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.model.role
+package ru.cobalt42.auth.model.auth.role
 
 data class Permission(
     var permissionLevel: Int = 0,

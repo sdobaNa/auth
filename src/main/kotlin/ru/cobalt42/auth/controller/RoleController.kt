@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ru.cobalt42.auth.dto.PaginatedResponse
-import ru.cobalt42.auth.model.role.Role
+import ru.cobalt42.auth.model.auth.role.Role
 import ru.cobalt42.auth.service.RoleService
 
 @CrossOrigin
@@ -30,7 +30,7 @@ class RoleController(
         @RequestParam(defaultValue = "1", required = false) page: Int,
         @RequestParam(defaultValue = "50", required = false) size: Int,
         @RequestParam(defaultValue = "", required = false) search: String,
-    ): ResponseEntity<PaginatedResponse> {
+    ): ResponseEntity<PaginatedResponse<Role>> {
         val paging = PageRequest.of(page - 1, size)
         return ResponseEntity.ok(service.getAll(paging, search))
     }

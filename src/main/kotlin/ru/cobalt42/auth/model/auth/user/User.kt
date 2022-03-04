@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.model.user
+package ru.cobalt42.auth.model.auth.user
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.bson.types.ObjectId
@@ -12,7 +12,6 @@ data class User(
     var secondName: String = "",
     var lastName: String = "",
     var name: String = "",
-    var organization: String = "",
     var position: String = "",
     var phoneNumber: String = "",
     var mail: String = "",
@@ -23,7 +22,11 @@ data class User(
     var subExpDate: String = "",
     var statusId: Int = 0,
     var groupUid: String = "",
-    @Id
+    var projectUid: String = "",
+    var organization: String = "",
     @JsonIgnore
+    var superAdmin: Boolean = false,
+    @JsonIgnore
+    @Id
     var _id: ObjectId = ObjectId.get()
 )

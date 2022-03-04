@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse
 class GlobalExceptionHandlerController {
     @ExceptionHandler(RequestException::class)
     fun handleCustomException(res: HttpServletResponse, ex: RequestException) =
-        res.sendError(ex.getHttpStatus().value(), ex.message)
+        ResponseEntity(ex.message(), ex.getHttpStatus())
 
     @ExceptionHandler(ValidateException::class)
     fun handleValidateException(res: HttpServletResponse, ex: ValidateException) =

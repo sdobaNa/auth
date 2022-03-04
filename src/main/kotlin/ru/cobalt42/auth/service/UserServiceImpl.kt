@@ -12,13 +12,12 @@ import ru.cobalt42.auth.dto.PaginatedResponse
 import ru.cobalt42.auth.exception.ExceptionMessage
 import ru.cobalt42.auth.exception.RequestException
 import ru.cobalt42.auth.exception.ValidateException
-import ru.cobalt42.auth.model.Refresh
-import ru.cobalt42.auth.model.user.User
+import ru.cobalt42.auth.model.auth.Refresh
+import ru.cobalt42.auth.model.auth.user.User
 import ru.cobalt42.auth.repository.auth.RefreshRepository
 import ru.cobalt42.auth.repository.auth.UserRepository
 import ru.cobalt42.auth.util.SystemMessages
 import ru.cobalt42.auth.util.UserSearcher
-import java.text.SimpleDateFormat
 import java.util.*
 
 @Service
@@ -26,13 +25,13 @@ class UserServiceImpl(
     private val repository: UserRepository,
     private val refreshRepository: RefreshRepository,
     private val systemMessages: SystemMessages,
-    private val userSearcher: UserSearcher
+    private val userSearcher: UserSearcher,
 ) : UserService {
 
     @Value("\${token.refresh.time}")
     private lateinit var refreshTime: String
 
-    override fun createOne(user: User, authToken: String): DefaultResponse {
+    override fun createOne(user: User, authToken: String): DefaultResponse<User> {
         val messages = validator(user, authToken)
         if (user.password.isBlank())
             messages.add(
@@ -44,7 +43,7 @@ class UserServiceImpl(
             )
         if (user.login.isNotBlank())
             try {
-                repository.findByLogin(user.login)
+                repository.getByLogin(user.login)
                 messages.add(
                     systemMessages.getException(
                         authToken = authToken,
@@ -58,20 +57,14 @@ class UserServiceImpl(
                 repository.save(user)
                 refreshRepository.save(
                     Refresh(
-                        refresh = UUID.randomUUID().toString(),
-                        exp = try {
-                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date(System.currentTimeMillis() + refreshTime.toInt()))
-                        } catch (e: Throwable) {
-                            throw RequestException("Expiration date exception", HttpStatus.BAD_REQUEST)
-                        },
-                        user = user.uid
+                        userUid = user.uid
                     )
                 )
             }
         return DefaultResponse(user, messages)
     }
 
-    override fun getAll(paging: Pageable, search: String): PaginatedResponse {
+    override fun getAll(paging: Pageable, search: String): PaginatedResponse<User> {
         var total: Long
         return if (search.isBlank())
             PaginatedResponse(
@@ -83,46 +76,60 @@ class UserServiceImpl(
         else
             PaginatedResponse(
                 result =
-                repository.findByLoginContainingIgnoreCase(search, paging)
+                repository.getByLoginContainingIgnoreCase(search, paging)
                     .also { total = it.totalElements }.toList(),
                 total = total
             )
     }
 
-    override fun getOne(uid: String, authToken: String): DefaultResponse {
+    override fun getOne(uid: String, authToken: String): DefaultResponse<User> {
         if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid))
-            return DefaultResponse(repository.findByUid(uid).also { it.password = "" })
+            return DefaultResponse(repository.getByUid(uid).also { it.password = "" })
         else
             throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
-    override fun updateOne(uid: String, user: User, authToken: String): DefaultResponse {
-        if (userSearcher.isAdmin(authToken) || userSearcher.isOriginalUser(authToken, uid)) {
-            user.uid = uid
-            val messages = validator(user, authToken)
-            if (messages.any { (it.code in 1..9999) })
-                throw ValidateException(user, messages)
-            val old = try {
-                repository.findByUid(uid)
-            } catch (e: DataAccessException) {
-                messages.add(
-                    systemMessages.getWarning(
-                        authToken = authToken,
-                        uname = "updatedDocumentNotFound"
-                    )
+    override fun updateOne(uid: String, user: User, authToken: String): DefaultResponse<User> {
+        user.uid = uid
+        val messages = validator(user, authToken)
+        if (messages.any { (it.code in 1..9999) })
+            throw ValidateException(user, messages)
+        val old = try {
+            repository.getByUid(uid)
+        } catch (e: DataAccessException) {
+            messages.add(
+                systemMessages.getWarning(
+                    authToken = authToken,
+                    uname = "updatedDocumentNotFound"
                 )
-                User()
-            }
+            )
+            User()
+        }
+        return if (userSearcher.isAdmin(authToken)) {
             user._id = old._id
             if (user.password.isNotBlank())
                 user.password = BCryptPasswordEncoder().encode(user.password)
             else user.password = old.password
             repository.save(user)
-            return DefaultResponse(user, messages)
+            DefaultResponse(user, messages)
+        } else if (userSearcher.isOriginalUser(authToken, uid)) {
+            repository.save(updateFields(old, user))
+            DefaultResponse(old, messages)
         } else throw RequestException("Attempt to bypass access", HttpStatus.FORBIDDEN)
     }
 
     override fun deleteOne(uid: String) = repository.deleteByUid(uid)
+
+    private fun updateFields(oldUser: User, newUser: User) = oldUser.also {
+        oldUser.firstName = newUser.firstName
+        oldUser.secondName = newUser.secondName
+        oldUser.lastName = newUser.lastName
+        oldUser.name = newUser.name
+        oldUser.phoneNumber = newUser.phoneNumber
+        oldUser.mail = newUser.mail
+        oldUser.avatar = newUser.avatar
+        oldUser.projectUid = newUser.projectUid
+    }
 
     private fun validator(user: User, authToken: String): MutableList<ExceptionMessage> {
         val messages = mutableListOf<ExceptionMessage>()

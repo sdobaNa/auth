@@ -6,19 +6,19 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ru.cobalt42.auth.dto.PaginatedResponse
-import ru.cobalt42.auth.model.group.Group
+import ru.cobalt42.auth.model.auth.group.Group
 import ru.cobalt42.auth.service.GroupService
 
 @CrossOrigin
 @RestController
 @RequestMapping("api/auth/group")
 class GroupController(
-    private val service: GroupService
+    private val service: GroupService,
 ) {
     @PostMapping
     fun createOne(
         @RequestBody group: Group,
-        @RequestHeader("Authorization") authToken: String
+        @RequestHeader("Authorization") authToken: String,
     ) = try {
         ResponseEntity.ok(service.createOne(group, authToken))
     } catch (e: EmptyResultDataAccessException) {
@@ -30,7 +30,7 @@ class GroupController(
         @RequestParam(defaultValue = "1", required = false) page: Int,
         @RequestParam(defaultValue = "50", required = false) size: Int,
         @RequestParam(defaultValue = "", required = false) search: String,
-    ): ResponseEntity<PaginatedResponse> {
+    ): ResponseEntity<PaginatedResponse<Group>> {
         val paging = PageRequest.of(page - 1, size)
         return ResponseEntity.ok(service.getAll(paging, search))
     }
@@ -46,7 +46,7 @@ class GroupController(
     fun updateOne(
         @PathVariable("uid") uid: String,
         @RequestBody group: Group,
-        @RequestHeader("Authorization") authToken: String
+        @RequestHeader("Authorization") authToken: String,
     ) = try {
         ResponseEntity.ok(service.updateOne(uid, group, authToken))
     } catch (e: EmptyResultDataAccessException) {

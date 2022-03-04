@@ -1,4 +1,4 @@
-package ru.cobalt42.auth.model.user
+package ru.cobalt42.auth.model.auth.user
 
 data class Logo(
     var originName: String = "",

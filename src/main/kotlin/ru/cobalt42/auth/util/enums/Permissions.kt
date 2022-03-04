@@ -1,6 +1,6 @@
 package ru.cobalt42.auth.util.enums
 
-import ru.cobalt42.auth.model.role.Permission
+import ru.cobalt42.auth.model.auth.role.Permission
 
 enum class Permissions(var permissions: List<Permission>) {
     PERMISSIONS(
@@ -223,7 +223,7 @@ enum class Permissions(var permissions: List<Permission>) {
             Permission(
                 0,
                 "certificate",
-                "Сертификат",
+                "Иное удостоверение",
             ),
             Permission(
                 0,
@@ -324,6 +324,26 @@ enum class Permissions(var permissions: List<Permission>) {
                 0,
                 "parse",
                 "Импорт данных"
+            ),
+            Permission(
+                0,
+                "chiefWelderCertificate",
+                "Удостоверение руководителя сварочных работ"
+            ),
+            Permission(
+                0,
+                "defectoscopistCertificate",
+                "Удостоверение дефектоскописта"
+            ),
+            Permission(
+                0,
+                "fitterCertificate",
+                "Удостоверение монтажника высокопрочных болтов"
+            ),
+            Permission(
+                0,
+                "heatTreaterCertificate",
+                "Удостоверение оператора-термиста"
             )
         )
     )

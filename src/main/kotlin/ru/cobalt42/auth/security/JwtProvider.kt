@@ -61,7 +61,7 @@ class JwtProvider(
             throw RequestException("Expired or invalid JWT token", UNAUTHORIZED)
         }
         val userUid = try {
-            JSONObject(payload)["user"].toString()
+            JSONObject(payload)["userUid"].toString()
         } catch (e: Throwable) {
             throw RequestException("System error", INTERNAL_SERVER_ERROR)
         }
@@ -79,7 +79,7 @@ class JwtProvider(
         }
 
         if (try {
-                userRepository.findByUid(userUid).roles.map { roleRepository.findByUid(it) }
+                userRepository.getByUid(userUid).roles.map { roleRepository.getByUid(it) }
                     .any { it.name == "admin" }
             } catch (e: EmptyResultDataAccessException) {
                 throw RequestException("User or role is missing", UNAUTHORIZED)
