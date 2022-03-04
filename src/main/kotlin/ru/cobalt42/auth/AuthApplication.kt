@@ -30,12 +30,11 @@ fun main(args: Array<String>) {
     converter.setTypeMapper(DefaultMongoTypeMapper(null))
 
     fun getUid() = UUID.randomUUID().toString()
-    val userUid = getUid()
     val roleUid = getUid()
 
     MongoTemplate(databaseFactory, converter).save(
         User(
-            uid = userUid,
+            uid = "superPuperUidAdmina",
             login = "cobalt",
             password = "\$2a\$10\$2wggeB6Xl0tnHnMMOdd4vuANO/xcxd/h2iAZJCev48kgZ/gOeZMk.",
             name = "admin",
@@ -59,7 +58,7 @@ fun main(args: Array<String>) {
     MongoTemplate(databaseFactory, converter).save(
         Refresh(
             token = "",
-            userUid = userUid,
+            userUid = "superPuperUidAdmina",
             _id = ObjectId("6139c983235ced2377be534c")
         ),
         "refresh"
